@@ -4,6 +4,7 @@
 (define-module (guix-home-config)
   #:use-module (gnu home)
   #:use-module (gnu home services)
+  #:use-module (gnu home services shells)
   #:use-module (gnu home services desktop)
   #:use-module (gnu services)
   #:use-module (gnu system shadow))
@@ -14,7 +15,7 @@
       (list
         ;; Uncomment the shell you wish to use for your user:
         ;(service home-bash-service-type)
-        ;(service home-fish-service-type)
+        (service home-fish-service-type)
         ;(service home-zsh-service-type)
 	(simple-service 'defenv home-environment-variables-service-type
 	   ;;proxy

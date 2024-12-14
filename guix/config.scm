@@ -1,6 +1,7 @@
 (use-modules
   (gnu)
   (gnu packages certs)
+  (gnu packages shells)
   (nongnu packages linux)
   (nongnu system linux-initrd)
   (gnu services networking)
@@ -11,7 +12,7 @@
 
 (operating-system
   (kernel linux)
-  (firmware (list linux-firmware amdgpu-firmware))
+  (firmware (list linux-firmware))
   (initrd microcode-initrd)
   (locale "en_US.utf8")
   (timezone "Asia/Shanghai")
@@ -19,14 +20,15 @@
   (host-name "guix")
 
   (users (cons (user-account
-		 (name "cc1")
-		 (comment "cc1")
+		 (name "srus")
+		 (comment "srus")
+		 (shell (file-append fish "/bin/fish"))
 		 (group "users")
-		 (home-directory "/home/cc1")
+		 (home-directory "/home/srus")
 		 (supplementary-groups '("wheel" "netdev" "audio" "video")))
 	       %base-user-accounts))
 
-  (packages (append (list nss-certs) %base-packages))
+  (packages %base-packages)
 
   (services (cons* (service elogind-service-type
 			    (elogind-configuration
@@ -38,24 +40,26 @@
 				    (guix-service-type
 				      config => (guix-configuration
 						  (inherit config)
-						  (channels (cons (channel
-								    (name 'nonguix)
-								    (url "https://gitlab.com/nonguix/nonguix"))
-								  %default-channels))
+						  (channels (list
+							      (channel
+								(inherit (car %default-channels))
+								(url "https://mirror.sjtu.edu.cn/git/guix.git"))
+							      (channel
+								(name 'nonguix)
+								(url "https://gitlab.com/nonguix/nonguix"))))
 						  (http-proxy "http://127.0.0.1:7890"))))))
 
   (bootloader (bootloader-configuration
                 (bootloader grub-efi-bootloader)
                 (targets (list "/boot/efi"))
                 (keyboard-layout keyboard-layout)))
-  (swap-devices (list (swap-space (target (uuid "e5c87fb2-e8f8-4c7f-b659-0d0d0d33bd74")))))
 
   (file-systems (cons* (file-system
                          (mount-point "/boot/efi")
-                         (device (uuid "6993-ABCD" 'fat32))
+                         (device (uuid "089E-51D3" 'fat32))
                          (type "vfat"))
                        (file-system
                          (mount-point "/")
-                         (device (uuid "6150dc3b-0816-4215-88a8-250a3fedb748" 'ext4))
+                         (device (uuid "9fbe997b-3aef-4716-8608-792021613443" 'ext4))
                          (type "ext4"))
 		       %base-file-systems)))
