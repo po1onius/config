@@ -815,4 +815,3 @@ Category property for char.")
     (description "A Kakoune / Neovim inspired editor, written in Rust.")
     (license (list license:mpl2.0))))
 
-helix
