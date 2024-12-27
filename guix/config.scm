@@ -43,6 +43,9 @@
 							      (channel
 								(inherit (car %default-channels))
 								(url "https://mirror.sjtu.edu.cn/git/guix.git"))
+								(channel
+								(name 'srus)
+								(url "https://github.com/po1onius/cchanl.git"))
 							      (channel
 							        (name 'rustup)
 								(url "https://github.com/declantsien/guix-rustup"))
