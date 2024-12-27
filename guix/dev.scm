@@ -1,6 +1,5 @@
 ;some useful args
-;guix shell --container --network --emulate-fhs --preserve='^DISPLAY$' --preserve='^DBUS_' --expose=/var/run/dbus --expose=/dev/dri --share=/dev/snd --share=/dev/shm --expose=/sys/class/input --expose=/sys/devices --expose=/sys/dev --expose=/sys/bus/pci --expose=/run/user/"$(id -u)" --preserve='^XDG_' --manifest=manifest.scm --preserve='^WAYLAND_DISPLAY$' --preserve='^https_proxy$' --preserve='^UDEV_HWDB_PATH$'
-
+;guix shell --container --network --emulate-fhs --preserve='^DISPLAY$' --preserve='^DBUS_' --expose=/var/run/dbus --expose=/dev/dri --share=/dev/snd --share=/dev/shm --expose=/sys/class/input --expose=/sys/devices --expose=/sys/dev --expose=/sys/bus/pci --expose=/run/user/"$(id -u)" --preserve='^XDG_' --preserve='^WAYLAND_DISPLAY$' --preserve='^https_proxy$' --preserve='^UDEV_HWDB_PATH$' --manifest=dev.scm
 
 
 (use-modules
