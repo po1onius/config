@@ -1,6 +1,5 @@
 (use-modules
   (gnu)
-  (gnu packages certs)
   (gnu packages shells)
   (nongnu packages linux)
   (nongnu system linux-initrd)
@@ -44,6 +43,9 @@
 							      (channel
 								(inherit (car %default-channels))
 								(url "https://mirror.sjtu.edu.cn/git/guix.git"))
+							      (channel
+							        (name 'rustup)
+								(url "https://github.com/declantsien/guix-rustup"))
 							      (channel
 								(name 'nonguix)
 								(url "https://gitlab.com/nonguix/nonguix"))))
