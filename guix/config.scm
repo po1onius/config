@@ -6,6 +6,7 @@
   (gnu services networking)
   (gnu services desktop)
   (gnu services sound)
+  (gnu services dbus)
   (guix channels))
 
 
@@ -13,7 +14,7 @@
   (kernel linux)
   (firmware (list linux-firmware))
   (initrd microcode-initrd)
-  (locale "en_US.utf8")
+  (locale "zh_CN.utf8")
   (timezone "Asia/Shanghai")
   (keyboard-layout (keyboard-layout "us"))
   (host-name "guix")
@@ -34,6 +35,7 @@
 			      (handle-power-key 'ignore)))
 		   (service wpa-supplicant-service-type)
 		   (service network-manager-service-type)
+			(service polkit-service-type)
 		   (service alsa-service-type)
 		   (modify-services %base-services
 				    (guix-service-type
@@ -61,10 +63,10 @@
 
   (file-systems (cons* (file-system
                          (mount-point "/boot/efi")
-                         (device (uuid "089E-51D3" 'fat32))
+                         (device (uuid "1119-B7EB" 'fat32))
                          (type "vfat"))
                        (file-system
                          (mount-point "/")
-                         (device (uuid "9fbe997b-3aef-4716-8608-792021613443" 'ext4))
+                         (device (uuid "e6388fc8-ebcb-4ed0-9afb-d1ac434d5740" 'ext4))
                          (type "ext4"))
 		       %base-file-systems)))
