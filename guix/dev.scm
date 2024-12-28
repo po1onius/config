@@ -3,13 +3,13 @@
 
 
 (use-modules
+  (helix)
   (gnu packages pkg-config)
   (gnu packages curl)
+  (gnu packages version-control)
   (gnu packages certs)
   (gnu packages commencement)
   (rustup build toolchain)
-  ;(gnu packages rust)
-  ;(gnu packages rust-apps)
   (gnu packages gl)
   (gnu packages vulkan)
   (gnu packages freedesktop)
@@ -20,15 +20,14 @@
 
 (packages->manifest
   (list gcc-toolchain
+  helix
+  git
     nss-certs
     coreutils
     curl
 	eudev
 	pkg-config
-    (rustup)
-	;rust
-	;rust-cargo
-	;rust-analyzer
+    (rustup "stable" #:components (list 'rust-analyzer))
 	libxkbcommon
 	vulkan-loader
 	mesa
