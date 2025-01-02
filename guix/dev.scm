@@ -6,6 +6,9 @@
   (helix)
   (gnu packages pkg-config)
   (gnu packages curl)
+  (gnu packages base)
+  (gnu packages less)
+  (gnu packages golang)
   (gnu packages version-control)
   (gnu packages certs)
   (gnu packages commencement)
@@ -20,7 +23,10 @@
 
 (packages->manifest
   (list gcc-toolchain
+        less
   helix
+  gnu-make
+  go
   git
     nss-certs
     coreutils
