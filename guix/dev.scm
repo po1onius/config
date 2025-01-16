@@ -6,6 +6,11 @@
   (helix)
   (gnu packages pkg-config)
   (gnu packages curl)
+  (gnu packages webkit)
+  (gnu packages gtk)
+  (gnu packages llvm)
+  (gnu packages build-tools)
+  (gnu packages wm)
   (gnu packages base)
   (gnu packages less)
   (gnu packages golang)
@@ -24,19 +29,30 @@
 (packages->manifest
   (list gcc-toolchain
         less
-  helix
-  gnu-make
-  go
-  git
-    nss-certs
-    coreutils
-    curl
-	eudev
-	pkg-config
-    (rustup "stable" #:components (list 'rust-analyzer))
-	libxkbcommon
-	vulkan-loader
-	mesa
-	wayland
-	alsa-lib))
+        wl-clipboard
+        wlroots
+        meson
+        clang
+        webkitgtk
+        webkitgtk-with-libsoup2
+        gtk+
+        gtk
+        webkitgtk-for-gtk3
+        grep
+        helix
+        atkmm
+        gnu-make
+        go
+        git
+        nss-certs
+        coreutils
+        curl
+	      eudev
+	      pkg-config
+        (rustup "stable" #:components (list 'rust-analyzer 'rust-src))
+	      libxkbcommon
+	      vulkan-loader
+	      mesa
+	      wayland
+	      alsa-lib))
 
