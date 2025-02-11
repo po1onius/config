@@ -17,7 +17,7 @@
 
   networking.proxy.default = "http://127.0.0.1:7890";
 
-  i18n.defaultLocale = "en_US.UTF-8";
+  i18n.defaultLocale = "zh_CN.UTF-8";
 
   i18n.inputMethod = {
     enable = true;
@@ -32,7 +32,7 @@
   fonts = {
     packages = with pkgs; [
       intel-one-mono
-      fira-code-nerdfont      
+      nerd-fonts.fira-code      
       wqy_microhei
       noto-fonts-emoji
       twemoji-color-font
@@ -44,13 +44,10 @@
       enable = true;
       pulse.enable = true;
     };
-    mihomo = {
-      enable = true;
-      configFile = import ./ctx.nix "clash";
-    };
+    v2raya.enable = true;
   };
 
-  users.users.cc= {
+  users.users.srus = {
     isNormalUser = true;
     extraGroups = [ "wheel" "audio" "video" "input"];
     packages = with pkgs; [
@@ -61,6 +58,9 @@
       rofi-wayland
       qq
       telegram-desktop
+      grim
+      wl-clipboard
+      slurp
     ];
   };
 
@@ -72,17 +72,10 @@
   programs.sway.enable = true;
   programs.waybar.enable = true;
   
-  system.stateVersion = "24.05";
+  system.stateVersion = "24.11";
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nixpkgs.config.allowUnfree = true;
 
-  nixpkgs.overlays = [
-    (self: super: {
-      chromium = super.chromium.override {
-        commandLineArgs = "--gtk-version=4";
-      };
-    })
-  ];
 }
 
