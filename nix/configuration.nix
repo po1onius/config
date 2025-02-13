@@ -57,7 +57,6 @@
       tree
       rofi-wayland
       qq
-      telegram-desktop
       grim
       wl-clipboard
       slurp
@@ -69,8 +68,13 @@
     git
   ];
 
-  programs.sway.enable = true;
-  programs.waybar.enable = true;
+  programs = {
+    sway = {
+      enable = true;
+      extraPackages = [];
+    };
+    waybar.enable = true;
+  };
   
   system.stateVersion = "24.11";
 
