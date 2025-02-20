@@ -4,6 +4,7 @@ lsp.display-inlay-hints = true
 idle-timeout = 800
 cursorline = true
 popup-border = "all"
+mouse = false
 [editor.cursor-shape]
 select = "underline"
 insert = "bar"

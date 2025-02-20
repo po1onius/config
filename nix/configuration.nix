@@ -69,10 +69,7 @@
   ];
 
   programs = {
-    sway = {
-      enable = true;
-      extraPackages = [];
-    };
+    niri.enable = true;
     waybar.enable = true;
   };
   
