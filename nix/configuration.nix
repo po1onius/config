@@ -60,6 +60,7 @@
       grim
       wl-clipboard
       slurp
+      wemeet
     ];
   };
 
@@ -69,10 +70,20 @@
   ];
 
   programs = {
+    # sway = {
+    #   enable = true;
+    #   extraPackages = [];
+    # };
     niri.enable = true;
     waybar.enable = true;
   };
-  
+
+  nixpkgs.overlays = [(final: prev: {
+    qq = prev.qq.override {
+      commandLineArgs = "--ozone-platform=wayland";
+    };
+  })];
+
   system.stateVersion = "24.11";
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
