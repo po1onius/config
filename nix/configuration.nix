@@ -50,6 +50,7 @@
   users.users.srus = {
     isNormalUser = true;
     extraGroups = [ "wheel" "audio" "video" "input"];
+    shell = pkgs.fish;
     packages = with pkgs; [
       google-chrome
       alacritty
@@ -70,19 +71,20 @@
   ];
 
   programs = {
-    # sway = {
-    #   enable = true;
-    #   extraPackages = [];
-    # };
-    niri.enable = true;
+    sway = {
+      enable = true;
+      extraPackages = [];
+    };
+    # niri.enable = true;
     waybar.enable = true;
+    fish.enable = true;
   };
 
-  nixpkgs.overlays = [(final: prev: {
-    qq = prev.qq.override {
-      commandLineArgs = "--ozone-platform=wayland";
-    };
-  })];
+  # nixpkgs.overlays = [(final: prev: {
+  #   qq = prev.qq.override {
+  #     commandLineArgs = "--ozone-platform=wayland";
+  #   };
+  # })];
 
   system.stateVersion = "24.11";
 
