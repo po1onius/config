@@ -2,7 +2,7 @@
   description = "rust dev";
 
   inputs = {
-    nixpkgs.url      = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url      = "github:nixos/nixpkgs/nixos-24.11";
     rust-overlay.url = "github:oxalica/rust-overlay";
     flake-utils.url  = "github:numtide/flake-utils";
   };
@@ -18,6 +18,7 @@
       {
         devShells.default = with pkgs; mkShell rec {
           buildInputs = [
+            dbus
             udev
             alsa-lib-with-plugins
             vulkan-loader
@@ -26,7 +27,8 @@
             openssl
             pkg-config
             libGL
-            (rust-bin.stable.latest.default.override {
+            lldb
+            (rust-bin.nightly.latest.default.override {
               extensions = [ "rust-src" "rust-analyzer" ];
             })
           ];
