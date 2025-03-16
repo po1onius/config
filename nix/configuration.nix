@@ -45,7 +45,13 @@
       pulse.enable = true;
     };
     v2raya.enable = true;
+    xserver = {
+      desktopManager.gnome.enable = true;
+      displayManager.gdm.enable = true;
+    };
+    udev.packages = [pkgs.gnome-settings-daemon];
   };
+
 
   users.users.srus = {
     isNormalUser = true;
@@ -56,11 +62,11 @@
       alacritty
       helix
       tree
-      rofi-wayland
+      # rofi-wayland
       qq
-      grim
-      wl-clipboard
-      slurp
+      # grim
+      # wl-clipboard
+      # slurp
       wemeet
     ];
   };
@@ -71,20 +77,29 @@
   ];
 
   programs = {
-    sway = {
-      enable = true;
-      extraPackages = [];
-    };
+    # sway = {
+    #   enable = true;
+    #   extraPackages = [];
+    # };
     # niri.enable = true;
-    waybar.enable = true;
+    # waybar.enable = true;
     fish.enable = true;
   };
 
-  # nixpkgs.overlays = [(final: prev: {
+  nixpkgs.overlays = [
+  # (final: prev: {
   #   qq = prev.qq.override {
   #     commandLineArgs = "--ozone-platform=wayland";
   #   };
-  # })];
+  # })
+    (final: prev: {
+      wemeet = prev.wemeet.overrideAttrs (oldAttrs: {
+        postInstall = ''
+          sed -i 's/Exec=wemeet %u/Exec=wemeet-xwayland %u/' $out/share/applications/wemeetapp.desktop
+        '';
+      });
+    })
+  ];
 
   system.stateVersion = "24.11";
 
