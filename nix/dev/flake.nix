@@ -29,6 +29,7 @@
           mkShell rec {
             buildInputs = [
               cmake
+              cmake-language-server
               bear
               dbus
               udev
