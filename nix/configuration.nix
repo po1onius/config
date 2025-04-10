@@ -61,6 +61,7 @@
       google-chrome
       alacritty
       helix
+      zed-editor
       tree
       # rofi-wayland
       qq
@@ -105,6 +106,12 @@
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nixpkgs.config.allowUnfree = true;
+
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 1w";
+  };
 
 }
 
