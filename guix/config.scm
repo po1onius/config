@@ -30,13 +30,13 @@
 
   (packages %base-packages)
 
-  (services (cons* (service elogind-service-type
+  (services (append (list (service elogind-service-type
 			    (elogind-configuration
 			      (handle-power-key 'ignore)))
 		   (service wpa-supplicant-service-type)
 		   (service network-manager-service-type)
 			(service polkit-service-type)
-		   (service alsa-service-type)
+		   (service alsa-service-type))
 		   (modify-services %base-services
 				    (guix-service-type
 				      config => (guix-configuration
@@ -44,13 +44,14 @@
 						  (channels (list
 							      (channel
 								(inherit (car %default-channels))
-								(url "https://mirror.sjtu.edu.cn/git/guix.git"))
-								(channel
-								(name 'srus)
-								(url "https://github.com/po1onius/cchanl.git"))
+								(url "https://codeberg.org/guix/guix-mirror"))
 							      (channel
 							        (name 'rustup)
 								(url "https://github.com/declantsien/guix-rustup"))
+							      (channel
+								   (name 'rosenthal)
+   (url "https://codeberg.org/hako/rosenthal.git")
+   (branch "trunk"))
 							      (channel
 								(name 'nonguix)
 								(url "https://gitlab.com/nonguix/nonguix"))))
@@ -61,12 +62,12 @@
                 (targets (list "/boot/efi"))
                 (keyboard-layout keyboard-layout)))
 
-  (file-systems (cons* (file-system
+  (file-systems (append (list (file-system
                          (mount-point "/boot/efi")
-                         (device (uuid "1119-B7EB" 'fat32))
+                         (device (uuid "D4EA-B393" 'fat32))
                          (type "vfat"))
                        (file-system
                          (mount-point "/")
-                         (device (uuid "e6388fc8-ebcb-4ed0-9afb-d1ac434d5740" 'ext4))
-                         (type "ext4"))
+                         (device (uuid "28f23bc2-9164-4e85-889e-73d04372b8e2" 'ext4))
+                         (type "ext4")))
 		       %base-file-systems)))
