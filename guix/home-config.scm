@@ -5,12 +5,14 @@
 	     (gnu home services)
 	     (gnu home services sound)
 	     (gnu packages wm)
+	     (gnu packages image)
 	     (gnu packages ssh)
 	     (gnu packages fcitx5)
 	     (gnu packages gtk)
 	     (gnu packages terminals)
+	     (gnu packages linux)
 	     (gnu packages xdisorg)
-	     (gnu packages vim)
+	     (gnu packages text-editors)
 	     (gnu packages freedesktop)
 	     (gnu packages fonts)
 	     (gnu packages version-control)
@@ -68,6 +70,9 @@
     (packages (list
 		openssh
 		sway
+		slurp
+		wl-clipboard
+		grim
 		gtk+
 		waybar
 		fcitx5
@@ -81,7 +86,8 @@
 		rofi-wayland
 		google-chrome-stable
 		git
-		neovim
+		helix
+		bluez
 		font-google-noto-emoji
 		font-awesome-nonfree
 		font-intel-one-mono
