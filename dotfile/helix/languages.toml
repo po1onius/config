@@ -1,0 +1,9 @@
+[[language]]
+name = "rust"
+scope = "source.rust"
+roots = [ "Cargo.lock" ]
+auto-format = true
+injection-regex = "rust"
+file-types = ["rs"]
+comment-tokens = "//"
+language-servers = [ "rust-analyzer" ]

@@ -1,0 +1,22 @@
+# required by cc1
+*/* CPU_FLAGS_X86: aes avx avx2 avx512_bf16 avx512_bitalg avx512_vbmi2 avx512_vnni avx512_vpopcntdq avx512bw avx512cd avx512dq avx512f avx512ifma avx512vbmi avx512vl f16c fma3 mmx mmxext pclmul popcnt rdrand sha sse sse2 sse3 sse4_1 sse4_2 sse4a ssse3 vpclmulqdq
+dev-lang/rust rust-analyzer rust-src
+media-video/pipewire sound-server
+# required by global use "wayland"
+media-libs/libsdl2 gles2
+# required by net-im/telegram-desktop-5.1.5::gentoo
+# required by telegram-desktop (argument)
+media-video/ffmpeg opus vpx
+# required by net-im/telegram-desktop-5.1.5::gentoo
+# required by telegram-desktop (argument)
+sys-libs/zlib minizip
+# required by www-client/chromium-126.0.6478.114::gentoo
+# required by chromium (argument)
+>=net-libs/nodejs-22.3.0 inspector
+# required by www-client/chromium-126.0.6478.114::gentoo[system-toolchain]
+# required by chromium (argument)
+>=virtual/rust-1.78.0 profiler
+# required by virtual/rust-1.78.0::gentoo
+# required by www-client/chromium-126.0.6478.114::gentoo[system-toolchain]
+# required by chromium (argument)
+>=dev-lang/rust-1.78.0 profiler
