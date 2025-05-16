@@ -10,12 +10,14 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  networking.hostName = "nixos";
-  networking.wireless.iwd.enable = true;
+  networking = {
+    hostName = "nixos";
+    wireless.iwd.enable = true;
+    proxy.default = "http://127.0.0.1:7890";
+    nameservers = [ "8.8.8.8" ];
+  };
 
   time.timeZone = "Asia/Shanghai";
-
-  networking.proxy.default = "http://127.0.0.1:7890";
 
   i18n.defaultLocale = "zh_CN.UTF-8";
 
@@ -45,11 +47,13 @@
       pulse.enable = true;
     };
     v2raya.enable = true;
-    xserver = {
-      desktopManager.gnome.enable = true;
-      displayManager.gdm.enable = true;
+    displayManager.sddm = {
+      enable = true;
+      wayland.enable = true;
+      theme = "sddm-astronaut-theme";
+      extraPackages = [ pkgs.sddm-astronaut ];
+      package = pkgs.kdePackages.sddm;
     };
-    udev.packages = [pkgs.gnome-settings-daemon];
   };
 
 
@@ -61,45 +65,41 @@
       google-chrome
       alacritty
       helix
-      zed-editor
+      # zed-editor
       tree
-      # rofi-wayland
+      rofi-wayland
       qq
       # grim
       # wl-clipboard
       # slurp
-      wemeet
     ];
   };
 
   environment.systemPackages = with pkgs; [
     wget
     git
+    sddm-astronaut
   ];
 
   programs = {
-    # sway = {
-    #   enable = true;
-    #   extraPackages = [];
-    # };
-    # niri.enable = true;
-    # waybar.enable = true;
+    niri.enable = true;
+    waybar.enable = true;
     fish.enable = true;
   };
 
   nixpkgs.overlays = [
-  # (final: prev: {
-  #   qq = prev.qq.override {
-  #     commandLineArgs = "--ozone-platform=wayland";
-  #   };
-  # })
-    (final: prev: {
-      wemeet = prev.wemeet.overrideAttrs (oldAttrs: {
-        postInstall = ''
-          sed -i 's/Exec=wemeet %u/Exec=wemeet-xwayland %u/' $out/share/applications/wemeetapp.desktop
-        '';
-      });
-    })
+   (final: prev: {
+     qq = prev.qq.override {
+       commandLineArgs = "--ozone-platform=wayland";
+     };
+   })
+  #  (final: prev: {
+  #    wemeet = prev.wemeet.overrideAttrs (oldAttrs: {
+  #      postInstall = ''
+  #        sed -i 's/Exec=wemeet %u/Exec=wemeet-xwayland %u/' $out/share/applications/wemeetapp.desktop
+  #      '';
+  #    });
+  #  })
   ];
 
   system.stateVersion = "24.11";
