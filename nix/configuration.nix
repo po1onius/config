@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, sf-fonts, ... }:
 
 {
   imports =
@@ -12,7 +12,7 @@
 
   networking = {
     hostName = "nixos";
-    wireless.iwd.enable = true;
+    # wireless.iwd.enable = true;
     proxy.default = "http://127.0.0.1:7890";
     nameservers = [ "8.8.8.8" ];
   };
@@ -34,10 +34,11 @@
   fonts = {
     packages = with pkgs; [
       intel-one-mono
-      nerd-fonts.fira-code      
-      wqy_microhei
+      nerd-fonts.fira-code
+      lxgw-wenkai
       noto-fonts-emoji
-      twemoji-color-font
+    ] ++ [
+      sf-fonts.packages."${pkgs.system}".sf-mono
     ];
   };
     
@@ -47,13 +48,9 @@
       pulse.enable = true;
     };
     v2raya.enable = true;
-    displayManager.sddm = {
-      enable = true;
-      wayland.enable = true;
-      theme = "sddm-astronaut-theme";
-      extraPackages = [ pkgs.sddm-astronaut ];
-      package = pkgs.kdePackages.sddm;
-    };
+    displayManager.gdm.enable = true;
+    desktopManager.gnome.enable = true;
+    postgresql.enable = true;
   };
 
 
@@ -65,7 +62,7 @@
       google-chrome
       alacritty
       helix
-      # zed-editor
+      zed-editor
       tree
       rofi-wayland
       qq
@@ -78,29 +75,11 @@
   environment.systemPackages = with pkgs; [
     wget
     git
-    sddm-astronaut
   ];
 
   programs = {
-    niri.enable = true;
-    waybar.enable = true;
     fish.enable = true;
   };
-
-  nixpkgs.overlays = [
-   (final: prev: {
-     qq = prev.qq.override {
-       commandLineArgs = "--ozone-platform=wayland";
-     };
-   })
-  #  (final: prev: {
-  #    wemeet = prev.wemeet.overrideAttrs (oldAttrs: {
-  #      postInstall = ''
-  #        sed -i 's/Exec=wemeet %u/Exec=wemeet-xwayland %u/' $out/share/applications/wemeetapp.desktop
-  #      '';
-  #    });
-  #  })
-  ];
 
   system.stateVersion = "24.11";
 
