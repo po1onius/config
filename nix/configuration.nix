@@ -1,10 +1,15 @@
-{ config, lib, pkgs, sf-fonts, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  sf-fonts,
+  ...
+}:
 
 {
-  imports =
-    [
-      ./hardware-configuration.nix
-    ];
+  imports = [
+    ./hardware-configuration.nix
+  ];
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -26,22 +31,27 @@
     type = "fcitx5";
     fcitx5 = {
       waylandFrontend = false;
-      addons = with pkgs; [ fcitx5-chinese-addons fcitx5-rose-pine ];
+      addons = with pkgs; [
+        fcitx5-chinese-addons
+        fcitx5-rose-pine
+      ];
     };
   };
 
-
   fonts = {
-    packages = with pkgs; [
-      intel-one-mono
-      nerd-fonts.fira-code
-      lxgw-wenkai
-      noto-fonts-emoji
-    ] ++ [
-      sf-fonts.packages."${pkgs.system}".sf-mono
-    ];
+    packages =
+      with pkgs;
+      [
+        intel-one-mono
+        nerd-fonts.fira-code
+        lxgw-wenkai
+        noto-fonts-emoji
+      ]
+      ++ [
+        sf-fonts.packages."${pkgs.system}".sf-mono
+      ];
   };
-    
+
   services = {
     pipewire = {
       enable = true;
@@ -53,10 +63,14 @@
     postgresql.enable = true;
   };
 
-
   users.users.srus = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "audio" "video" "input"];
+    extraGroups = [
+      "wheel"
+      "audio"
+      "video"
+      "input"
+    ];
     shell = pkgs.fish;
     packages = with pkgs; [
       google-chrome
@@ -66,6 +80,8 @@
       tree
       rofi-wayland
       qq
+      nixd
+      nixfmt-rfc-style
       # grim
       # wl-clipboard
       # slurp
@@ -83,7 +99,10 @@
 
   system.stateVersion = "24.11";
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
   nixpkgs.config.allowUnfree = true;
 
   nix.gc = {
@@ -93,4 +112,3 @@
   };
 
 }
-
