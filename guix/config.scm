@@ -9,6 +9,7 @@
  (gnu services sound)
  (gnu services dbus)
  (gnu services containers)
+ (gnu system accounts)
  (guix channels))
 
 
@@ -27,7 +28,7 @@
 	       (shell (file-append fish "/bin/fish"))
 	       (group "users")
 	       (home-directory "/home/srus")
-	       (supplementary-groups '("wheel" "netdev" "audio" "video" "input")))
+	       (supplementary-groups '("wheel" "netdev" "audio" "video" "input" "cgroup")))
 	      %base-user-accounts))
 
  (packages %base-packages)
@@ -43,7 +44,12 @@
     (service dhcpcd-service-type)
     (service polkit-service-type)
     (service iptables-service-type)
-    (service rootless-podman-service-type)
+    (service rootless-podman-service-type
+	     (rootless-podman-configuration
+              (subgids
+               (list (subid-range (name "srus"))))
+              (subuids
+               (list (subid-range (name "srus"))))))
     (service alsa-service-type))
    (modify-services
     %base-services
