@@ -8,6 +8,7 @@
  (gnu services desktop)
  (gnu services sound)
  (gnu services dbus)
+ (gnu services containers)
  (guix channels))
 
 
@@ -41,6 +42,8 @@
     (service iwd-service-type)
     (service dhcpcd-service-type)
     (service polkit-service-type)
+    (service iptables-service-type)
+    (service rootless-podman-service-type)
     (service alsa-service-type))
    (modify-services
     %base-services
@@ -48,7 +51,6 @@
      config => (guix-configuration
 		(inherit config)
 		(privileged? #f)
-		(substitute-urls '("https://mirror.sjtu.edu.cn/guix/"))
 		(channels
 		 (append
 		  (list
@@ -61,7 +63,8 @@
 		    (branch "trunk"))
 		   (channel
 		    (name 'nonguix)
-		    (url "https://gitlab.com/nonguix/nonguix")))%default-channels))
+		    (url "https://gitlab.com/nonguix/nonguix")))
+		  %default-channels))
 		(http-proxy "http://127.0.0.1:7890"))))))
 
  (bootloader (bootloader-configuration

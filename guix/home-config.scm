@@ -13,6 +13,7 @@
 	     (gnu packages linux)
 	     (gnu packages xdisorg)
 	     (gnu packages text-editors)
+	     (gnu packages containers)
 	     (gnu packages freedesktop)
 	     (gnu packages fonts)
 	     (gnu packages version-control)
@@ -93,10 +94,11 @@
 	    git
 	    helix
 	    bluez
+      podman-compose
 	    font-google-noto-emoji
 	    font-awesome-nonfree
 	    font-apple-sf-mono
-	    font-lxgw-wenkai-tc))
+      font-lxgw-wenkai-tc))
  (services
   (append
    (list
