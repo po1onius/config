@@ -17,6 +17,7 @@
 	     (gnu packages freedesktop)
 	     (gnu packages fonts)
 	     (gnu packages version-control)
+	     (gnu packages package-management)
 	     (gnu services configuration)
 	     (gnu home services shells)
 	     (gnu home services desktop)
@@ -25,6 +26,7 @@
 	     (guix records)
 	     (nongnu packages chrome)
 	     (nongnu packages fonts)
+	     (ch0r0ng packages wm)
 	     (gnu services)
 	     (gnu system shadow)
 	     (rosenthal packages binaries))
@@ -75,7 +77,10 @@
 (home-environment
  (packages (list
 	    openssh
+      flatpak
 	    sway
+      maomaowm
+      hyprland
 	    slurp
 	    wl-clipboard
 	    grim

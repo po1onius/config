@@ -67,6 +67,9 @@
 		    (name 'rosenthal)
 		    (url "https://codeberg.org/hako/rosenthal.git")
 		    (branch "trunk"))
+       (channel
+        (name 'chorong)
+        (url "https://github.com/po1onius/cchanl"))
 		   (channel
 		    (name 'nonguix)
 		    (url "https://gitlab.com/nonguix/nonguix")))
