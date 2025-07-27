@@ -18,92 +18,66 @@
 	     (gnu packages fonts)
 	     (gnu packages version-control)
 	     (gnu packages package-management)
-	     (gnu services configuration)
 	     (gnu home services shells)
 	     (gnu home services desktop)
 	     (gnu home services shepherd)
-	     (guix gexp)
-	     (guix records)
 	     (nongnu packages chrome)
 	     (nongnu packages fonts)
 	     (ch0r0ng packages wm)
 	     (gnu services)
 	     (gnu system shadow)
-	     (rosenthal packages binaries))
+	     (guix inferior)
+	     (guix channels)
+	     (srfi srfi-1)
+	     (ch0r0ng services network))
 
 
-(define-configuration clash-configuration
-  (clash
-   (file-like mihomo-bin)
-   "The clash package.")
+(define channel-rust-team
+  (list (channel
+         (name 'guix)
+         (url "https://codeberg.org/guix/guix.git")
+         (branch "rust-team"))))
 
 
-  (config-path
-   (string ".config/clash")
-   "config path")
-  (no-serialization))
+(define inferior-rust-team
+  (inferior-for-channels channel-rust-team))
 
-(define clash-shepherd-service
-  (match-record-lambda
-   <clash-configuration>
-   (clash config-path)
-   (list
-    (shepherd-service
-     (documentation "Run clash.")
-     (provision (list 'clash))
-     (start
-      #~(make-forkexec-constructor
-	 (list
-	  (let ((mihomo-cmd
-		 #$(file-append clash "/bin/mihomo"))
-		(clash-cmd
-		 #$(file-append clash "/bin/clash")))
-	    (if (file-exists? mihomo-cmd)
-		mihomo-cmd
-		clash-cmd))
-	  "-d" #$config-path)))
-     (stop #~(make-kill-destructor))))))
-
-(define clash-service-type
-  (service-type
-   (name 'clash)
-   (extensions
-    (list (service-extension
-	   home-shepherd-service-type
-	   clash-shepherd-service)))
-   (description "clash service")
-   (default-value (clash-configuration))))
 
 (home-environment
- (packages (list
-	    openssh
-      flatpak
-	    sway
-      maomaowm
-      hyprland
-	    slurp
-	    wl-clipboard
-	    grim
-	    gtk+
-	    waybar
-	    fcitx5
-	    fcitx5-qt
-	    fcitx5-gtk
-	    fcitx5-gtk4
-	    fcitx5-configtool
-	    fcitx5-chinese-addons
-	    fcitx5-material-color-theme
-	    alacritty
-	    rofi-wayland
-	    google-chrome-stable
-	    git
-	    helix
-	    bluez
-      podman-compose
-	    font-google-noto-emoji
-	    font-awesome-nonfree
-	    font-apple-sf-mono
-      font-lxgw-wenkai-tc))
+ (packages (append (list
+		    openssh
+		    flatpak
+		    sway
+		    maomaowm-git
+		    hyprland
+		    slurp
+		    wl-clipboard
+		    grim
+		    gtk+
+		    waybar-git
+		    fcitx5
+		    fcitx5-qt
+		    fcitx5-gtk
+		    fcitx5-gtk4
+		    fcitx5-configtool
+		    fcitx5-chinese-addons
+		    fcitx5-material-color-theme
+		    alacritty
+		    rofi-wayland
+		    google-chrome-stable
+		    git
+		    bluez
+		    podman-compose
+		    font-google-noto-emoji
+		    font-awesome-nonfree
+		    font-apple-sf-mono
+		    font-lxgw-wenkai-tc)
+		   (map 
+		    (lambda (packs) 
+		      (first (lookup-inferior-packages inferior-rust-team packs)))
+		    '("helix" "niri"))))
+
+ 
  (services
   (append
    (list
@@ -122,7 +96,7 @@
        ("QT_IM_MODULE" . "fcitx")
        ("QT_PLUGIN_PATH" . "${HOME}/.guix-profile/lib/qt5/plugins")
        ("GUIX_GTK3_IM_MODULE_FILE" . "${HOME}/.guix-profile/lib/gtk-3.0/3.0.0/immodules-gtk3.cache")))
-    (service clash-service-type)
+    (service home-clash-service-type)
     (service home-pipewire-service-type)
     (service home-dbus-service-type))
    %base-home-services)
