@@ -64,7 +64,7 @@ input {
 // Find more information on the wiki:
 // https://github.com/YaLTeR/niri/wiki/Configuration:-Outputs
 // Remember to uncomment the node by removing "/-"!
-output "DP-1" {
+output "DP-5" {
     // Uncomment this line to disable this output.
     // off
 
@@ -74,7 +74,7 @@ output "DP-1" {
     // for the resolution.
     // If the mode is omitted altogether or is invalid, niri will pick one automatically.
     // Run `niri msg outputs` while inside a niri instance to list all outputs and their modes.
-    mode "1920x1080@164.917"
+    mode "1920x1080@165"
 
     // You can use integer or fractional scale, for example use 1.5 for 150% scale.
     scale 1
@@ -208,7 +208,9 @@ layout {
 // Note that running niri as a session supports xdg-desktop-autostart,
 // which may be more convenient to use.
 // See the binds section below for more spawn examples.
-// spawn-at-startup "alacritty" "-e" "fish"
+spawn-at-startup "fcitx5" "-d"
+spawn-at-startup "waybar"
+
 
 // Uncomment this line to ask the clients to omit their client-side decorations if possible.
 // If the client will specifically ask for CSD, the request will be honored.
@@ -445,15 +447,15 @@ binds {
     Mod+7 { focus-workspace 7; }
     Mod+8 { focus-workspace 8; }
     Mod+9 { focus-workspace 9; }
-    // Mod+Ctrl+1 { move-column-to-workspace 1; }
-    // Mod+Ctrl+2 { move-column-to-workspace 2; }
-    // Mod+Ctrl+3 { move-column-to-workspace 3; }
-    // Mod+Ctrl+4 { move-column-to-workspace 4; }
-    // Mod+Ctrl+5 { move-column-to-workspace 5; }
-    // Mod+Ctrl+6 { move-column-to-workspace 6; }
-    // Mod+Ctrl+7 { move-column-to-workspace 7; }
-    // Mod+Ctrl+8 { move-column-to-workspace 8; }
-    // Mod+Ctrl+9 { move-column-to-workspace 9; }
+    Mod+Ctrl+1 { move-column-to-workspace 1; }
+    Mod+Ctrl+2 { move-column-to-workspace 2; }
+    Mod+Ctrl+3 { move-column-to-workspace 3; }
+    Mod+Ctrl+4 { move-column-to-workspace 4; }
+    Mod+Ctrl+5 { move-column-to-workspace 5; }
+    Mod+Ctrl+6 { move-column-to-workspace 6; }
+    Mod+Ctrl+7 { move-column-to-workspace 7; }
+    Mod+Ctrl+8 { move-column-to-workspace 8; }
+    Mod+Ctrl+9 { move-column-to-workspace 9; }
 
     // Alternatively, there are commands to move just a single window:
     // Mod+Ctrl+1 { move-window-to-workspace 1; }
@@ -495,8 +497,8 @@ binds {
     Mod+Alt+j { set-window-height "+10%"; }
 
     // Move the focused window between the floating and the tiling layout.
-    Mod+V       { toggle-window-floating; }
-    Mod+Shift+V { switch-focus-between-floating-and-tiling; }
+    Mod+Space       { toggle-window-floating; }
+    Mod+Shift+Space { switch-focus-between-floating-and-tiling; }
 
     // Actions to switch layouts.
     // Note: if you uncomment these, make sure you do NOT have
@@ -511,7 +513,7 @@ binds {
     // Alt+Print { screenshot-window; }
 
     // The quit action will show a confirmation dialog to avoid accidental exits.
-    // Mod+Shift+E { quit; }
+    Mod+Shift+E { quit; }
     // Ctrl+Alt+Delete { quit; }
 
     // Powers off the monitors. To turn them back on, do any input like
