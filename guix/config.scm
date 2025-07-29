@@ -57,6 +57,11 @@
      config => (guix-configuration
 		(inherit config)
 		(privileged? #f)
+		(substitute-urls
+		 (append
+		  (list
+		   "https://mirror.sjtu.edu.cn/guix")
+		  %default-substitute-urls))
 		(channels
 		 (append
 		  (list
@@ -67,9 +72,9 @@
 		    (name 'rosenthal)
 		    (url "https://codeberg.org/hako/rosenthal.git")
 		    (branch "trunk"))
-       (channel
-        (name 'chorong)
-        (url "https://github.com/po1onius/cchanl"))
+		   (channel
+		    (name 'chorong)
+		    (url "https://github.com/po1onius/cchanl"))
 		   (channel
 		    (name 'nonguix)
 		    (url "https://gitlab.com/nonguix/nonguix")))

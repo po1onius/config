@@ -10,6 +10,7 @@
 	     (gnu packages fcitx5)
 	     (gnu packages gtk)
 	     (gnu packages terminals)
+	     (gnu packages video)
 	     (gnu packages linux)
 	     (gnu packages xdisorg)
 	     (gnu packages text-editors)
@@ -47,6 +48,8 @@
  (packages (append (list
 		    openssh
 		    flatpak
+		    obs
+		    obs-wlrobs
 		    sway
 		    maomaowm-git
 		    hyprland
