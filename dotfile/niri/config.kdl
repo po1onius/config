@@ -134,7 +134,6 @@ layout {
     // By default focus ring and border are rendered as a solid background rectangle
     // behind windows. That is, they will show up through semitransparent windows.
     // This is because windows using client-side decorations can have an arbitrary shape.
-    //
     // If you don't like that, you should uncomment `prefer-no-csd` below.
     // Niri will draw focus ring and border *around* windows that agree to omit their
     // client-side decorations.
@@ -290,6 +289,8 @@ window-rule {
     match app-id="QQ"
     open-floating true
 }
+
+prefer-no-csd
 
 binds {
     // Keys consist of modifiers separated by + signs, followed by an XKB key name
