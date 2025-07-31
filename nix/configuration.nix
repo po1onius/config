@@ -17,7 +17,7 @@
 
   networking = {
     hostName = "nixos";
-    # wireless.iwd.enable = true;
+    wireless.iwd.enable = true;
     proxy.default = "http://127.0.0.1:7890";
     nameservers = [ "8.8.8.8" ];
   };
@@ -58,9 +58,6 @@
       pulse.enable = true;
     };
     v2raya.enable = true;
-    displayManager.gdm.enable = true;
-    desktopManager.gnome.enable = true;
-    postgresql.enable = true;
   };
 
   users.users.srus = {
@@ -70,6 +67,7 @@
       "audio"
       "video"
       "input"
+      "podman"
     ];
     shell = pkgs.fish;
     packages = with pkgs; [
@@ -77,6 +75,7 @@
       alacritty
       helix
       zed-editor
+      vscode-fhs
       tree
       rofi-wayland
       qq
@@ -85,7 +84,16 @@
       # grim
       # wl-clipboard
       # slurp
+      podman-compose
     ];
+  };
+
+  virtualisation.containers.enable = true;
+  virtualisation = {
+    podman = {
+      enable = true;
+      defaultNetwork.settings.dns_enabled = true;
+    };
   };
 
   environment.systemPackages = with pkgs; [
@@ -95,9 +103,19 @@
 
   programs = {
     fish.enable = true;
+    niri.enable = true;
+    waybar.enable = true;
   };
 
-  system.stateVersion = "24.11";
+  nixpkgs.overlays = [
+    (final: prev: {
+      qq = prev.qq.override {
+        commandLineArgs = "--ozone-platform=wayland --enable-wayland-ime --wayland-text-input-version=3 --disable-gpu";
+      };
+    })
+  ];
+
+  system.stateVersion = "25.05";
 
   nix.settings.experimental-features = [
     "nix-command"
