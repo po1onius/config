@@ -2,6 +2,7 @@
  (gnu)
  (gnu packages shells)
  (gnu packages linux)
+ (gnu packages version-control)
  (nongnu packages linux)
  (nongnu system linux-initrd)
  (gnu services networking)
@@ -31,7 +32,7 @@
 	       (supplementary-groups '("wheel" "netdev" "audio" "video" "input" "cgroup")))
 	      %base-user-accounts))
 
- (packages %base-packages)
+ (packages (cons git %base-packages))
 
  (services
   (append
@@ -83,18 +84,18 @@
 
  (bootloader (bootloader-configuration
               (bootloader grub-efi-bootloader)
-              (targets (list "/boot/efi"))
+              (targets (list "/boot"))
               (keyboard-layout keyboard-layout)))
 
  (file-systems
   (append
    (list
     (file-system
-     (mount-point "/boot/efi")
-     (device (uuid "7468-8C84" 'fat32))
+     (mount-point "/boot")
+     (device (uuid "A5E5-35FC" 'fat32))
      (type "vfat"))
     (file-system
      (mount-point "/")
-     (device (uuid "000034b6-7e73-4b29-90bc-cd90dc4a59b2" 'ext4))
+     (device (uuid "1c836d5d-4eb1-408a-a8b3-4bf352723661" 'ext4))
      (type "ext4")))
    %base-file-systems)))
