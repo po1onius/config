@@ -4,9 +4,11 @@
 (use-modules (gnu home)
 	     (gnu home services)
 	     (gnu home services sound)
+	     (gnu packages)
 	     (gnu packages wm)
 	     (gnu packages image)
 	     (gnu packages ssh)
+	     (gnu packages qt)
 	     (gnu packages fcitx5)
 	     (gnu packages gtk)
 	     (gnu packages terminals)
@@ -79,7 +81,8 @@
 		    font-google-noto-emoji
 		    font-awesome-nonfree
 		    font-apple-sf-mono
-		    font-lxgw-wenkai-tc)
+		    font-lxgw-wenkai-tc
+		    qtwayland)
 		   (map 
 		    (lambda (packs) 
 		      (first (lookup-inferior-packages inferior-rust-team packs)))
@@ -102,8 +105,8 @@
        ;;input method
        ("GTK_IM_MODULE" . "fcitx")
        ("QT_IM_MODULE" . "fcitx")
-       ("QT_PLUGIN_PATH" . "${HOME}/.guix-profile/lib/qt5/plugins")
-       ("GUIX_GTK3_IM_MODULE_FILE" . "${HOME}/.guix-profile/lib/gtk-3.0/3.0.0/immodules-gtk3.cache")))
+       ("QT_PLUGIN_PATH" . "${HOME}/.guix-home/profile/lib/qt6/plugins")
+       ("GUIX_GTK3_IM_MODULE_FILE" . "${HOME}/.guix-home/profile/lib/gtk-3.0/3.0.0/immodules-gtk3.cache")))
     (service home-clash-service-type)
     (service home-pipewire-service-type)
     (service home-dbus-service-type))
