@@ -86,7 +86,7 @@
 		   (map 
 		    (lambda (packs) 
 		      (first (lookup-inferior-packages inferior-rust-team packs)))
-		    '("helix" "niri"))))
+		    '("helix" "niri" "starship"))))
 
  
  (services
