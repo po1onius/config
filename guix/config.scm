@@ -93,6 +93,15 @@
          (url
           "https://gitlab.com/nonguix/nonguix"))
         (channel
+         (name 'abbe)
+         (url "https://codeberg.org/group/guix-modules.git")
+         (branch "mainline")
+         (introduction
+          (make-channel-introduction
+           "8c754e3a4b49af7459a8c99de130fa880e5ca86a"
+           (openpgp-fingerprint
+            "F682 CDCC 39DC 0FEA E116  20B6 C746 CFA9 E74F A4B0"))))
+        (channel
          (name 'guix)
          (url
           "https://codeberg.org/guix/guix.git")
@@ -115,12 +124,12 @@
    (list
     (file-system
      (mount-point "/boot")
-     (device (uuid "A5E5-35FC"
+     (device (uuid "F97A-F1DA"
                    'fat32))
      (type "vfat"))
     (file-system
      (mount-point "/")
      (device (uuid
-              "1c836d5d-4eb1-408a-a8b3-4bf352723661"
+              "7b606f38-4cbd-4a1d-ae5f-1d55e6b1cae0"
               'ext4))
      (type "ext4"))) %base-file-systems)))
