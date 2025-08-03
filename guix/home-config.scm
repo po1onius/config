@@ -41,11 +41,11 @@
          (name 'guix)
          (url "https://codeberg.org/guix/guix.git")
          (branch "rust-team")
-	     (introduction
-	      (make-channel-introduction
-	       "9edb3f66fd807b096b48283debdcddccfea34bad"
-	       (openpgp-fingerprint
-	        "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))))
+         (introduction
+          (make-channel-introduction
+           "9edb3f66fd807b096b48283debdcddccfea34bad"
+           (openpgp-fingerprint
+            "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))))
 
 
 (define inferior-rust-team
@@ -56,40 +56,40 @@
  (packages
   (append
    (list
-	openssh
-	flatpak
-	obs
-	obs-wlrobs
-	sway
-	mango-git
-	hyprland
-	slurp
-	wl-clipboard
-	grim
-	gtk+
-	waybar-git
-	fcitx5
-	fcitx5-qt
-	fcitx5-gtk
-	fcitx5-gtk4
-	fcitx5-configtool
-	fcitx5-chinese-addons
-	fcitx5-material-color-theme
-	alacritty
-	rofi-wayland
-	google-chrome-stable
-	git
-	bluez
-	podman-compose
-	font-google-noto-emoji
-	font-awesome-nonfree
-	font-apple-sf-mono
-	font-lxgw-wenkai-tc
-	qtwayland)
+    openssh
+    flatpak
+    obs
+    obs-wlrobs
+    sway
+    mangowc-git
+    hyprland
+    slurp
+    wl-clipboard
+    grim
+    gtk+
+    waybar-git
+    fcitx5
+    fcitx5-qt
+    fcitx5-gtk
+    fcitx5-gtk4
+    fcitx5-configtool
+    fcitx5-chinese-addons
+    fcitx5-material-color-theme
+    alacritty
+    rofi-wayland
+    google-chrome-stable
+    git
+    bluez
+    podman-compose
+    font-google-noto-emoji
+    font-awesome-nonfree
+    font-apple-sf-mono
+    font-lxgw-wenkai-tc
+    qtwayland)
    (map 
-	(lambda (packs) 
-	  (first (lookup-inferior-packages inferior-rust-team packs)))
-	'("helix" "niri" "starship"))))
+    (lambda (packs) 
+      (first (lookup-inferior-packages inferior-rust-team packs)))
+    '("helix" "niri" "starship"))))
 
  
  (services
@@ -113,6 +113,5 @@
     (service home-clash-service-type)
     (service home-pipewire-service-type)
     (service home-dbus-service-type))
-   %base-home-services)
-  ))
+   %base-home-services)))
 
