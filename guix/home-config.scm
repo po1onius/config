@@ -19,6 +19,7 @@
  (gnu packages text-editors)
  (gnu packages containers)
  (gnu packages freedesktop)
+ (gnu packages shellutils)
  (gnu packages fonts)
  (gnu packages version-control)
  (gnu packages package-management)
@@ -27,47 +28,28 @@
  (gnu home services shepherd)
  (nongnu packages chrome)
  (nongnu packages fonts)
- (ch0r0ng packages wm)
  (gnu services)
  (gnu system shadow)
- (guix inferior)
  (guix channels)
- (srfi srfi-1)
- (ch0r0ng services network))
+ (ch0r0ng services network)
+ (srfi srfi-1))
 
 
-(define channel-rust-team
-  (list (channel
-         (name 'guix)
-         (url "https://codeberg.org/guix/guix.git")
-         (branch "rust-team")
-         (introduction
-          (make-channel-introduction
-           "9edb3f66fd807b096b48283debdcddccfea34bad"
-           (openpgp-fingerprint
-            "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))))
-
-
-(define inferior-rust-team
-  (inferior-for-channels channel-rust-team))
 
 
 (home-environment
  (packages
-  (append
    (list
     openssh
     flatpak
     obs
     obs-wlrobs
     sway
-    mangowc-git
     hyprland
     slurp
     wl-clipboard
     grim
     gtk+
-    waybar-git
     fcitx5
     fcitx5-qt
     fcitx5-gtk
@@ -85,11 +67,11 @@
     font-awesome-nonfree
     font-apple-sf-mono
     font-lxgw-wenkai-tc
-    qtwayland)
-   (map 
-    (lambda (packs) 
-      (first (lookup-inferior-packages inferior-rust-team packs)))
-    '("helix" "niri" "starship"))))
+    qtwayland
+    waybar
+    helix
+    niri
+    starship))
 
  
  (services
@@ -101,6 +83,8 @@
      ;;proxy
      `(("https_proxy" . "http://127.0.0.1:7890")
        ("http_proxy"  . "http://127.0.0.1:7890")
+       ("HTTP_PROXY"  . "http://127.0.0.1:7890")
+       ("HTTPS_PROXY"  . "http://127.0.0.1:7890")
 
 
        ("MOZ_ENABLE_WAYLAND" . "1")
