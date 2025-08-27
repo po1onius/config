@@ -68,6 +68,7 @@
     font-apple-sf-mono
     font-lxgw-wenkai-tc
     qtwayland
+    emacs-pgtk
     waybar
     helix
     niri
