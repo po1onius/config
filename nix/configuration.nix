@@ -58,6 +58,7 @@
       pulse.enable = true;
     };
     v2raya.enable = true;
+    displayManager.gdm.enable = true;
   };
 
   users.users.srus = {
@@ -72,6 +73,7 @@
     shell = pkgs.fish;
     packages = with pkgs; [
       google-chrome
+      starship
       alacritty
       helix
       zed-editor
