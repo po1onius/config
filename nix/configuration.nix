@@ -17,7 +17,7 @@
 
   networking = {
     hostName = "nixos";
-    wireless.iwd.enable = true;
+    # wireless.iwd.enable = true;
     proxy.default = "http://127.0.0.1:7890";
     nameservers = [ "8.8.8.8" ];
   };
@@ -58,6 +58,9 @@
       pulse.enable = true;
     };
     v2raya.enable = true;
+    displayManager.gdm.enable = true;
+    desktopManager.gnome.enable = true;
+    xserver.enable = true;
   };
 
   users.users.srus = {
@@ -72,12 +75,13 @@
     shell = pkgs.fish;
     packages = with pkgs; [
       google-chrome
+      starship
       alacritty
       helix
-      zed-editor
-      vscode-fhs
+      (vscode.override { commandLineArgs = "--ozone-platform=wayland"; }).fhs
+      zed-editor-fhs
       tree
-      rofi-wayland
+      rofi
       qq
       nixd
       nixfmt-rfc-style
