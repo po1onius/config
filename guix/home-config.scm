@@ -13,6 +13,7 @@
  (gnu packages fcitx5)
  (gnu packages gtk)
  (gnu packages terminals)
+ (gnu packages xorg)
  (gnu packages video)
  (gnu packages linux)
  (gnu packages xdisorg)
@@ -20,12 +21,14 @@
  (gnu packages containers)
  (gnu packages freedesktop)
  (gnu packages shellutils)
+ (gnu packages emacs)
  (gnu packages fonts)
  (gnu packages version-control)
  (gnu packages package-management)
  (gnu home services shells)
  (gnu home services desktop)
  (gnu home services shepherd)
+ (ch0r0ng packages fonts)
  (nongnu packages chrome)
  (nongnu packages fonts)
  (gnu services)
@@ -58,17 +61,18 @@
     fcitx5-chinese-addons
     fcitx5-material-color-theme
     alacritty
-    rofi-wayland
+    rofi
     google-chrome-stable
     git
     bluez
     podman-compose
     font-google-noto-emoji
     font-awesome-nonfree
-    font-apple-sf-mono
+    font-sf-mono
     font-lxgw-wenkai-tc
     qtwayland
     emacs-pgtk
+    xwayland-satellite
     waybar
     helix
     niri
