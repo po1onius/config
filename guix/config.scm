@@ -67,6 +67,12 @@
      (guix-configuration
       (inherit config)
       (privileged? #f)
+      (substitute-urls
+       '("https://mirror.sjtu.edu.cn/guix"
+         "https://mirror.sjtu.edu.cn/guix-bordeaux"
+         "https://ci.guix.moe"
+         "https://ci.guix.gnu.org"
+         "https://bordeaux.guix.gnu.org"))
       (channels
        (list
         (channel
@@ -95,9 +101,7 @@
           (make-channel-introduction
            "9edb3f66fd807b096b48283debdcddccfea34bad"
            (openpgp-fingerprint
-            "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))))
-      (http-proxy
-       "http://127.0.0.1:7890"))))))
+            "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))))))))
 
  (bootloader
   (bootloader-configuration
