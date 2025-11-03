@@ -28,13 +28,14 @@
  (gnu home services shells)
  (gnu home services desktop)
  (gnu home services shepherd)
- (ch0r0ng packages fonts)
  (nongnu packages chrome)
+ (nongnu packages video)
  (nongnu packages fonts)
+ (nongnu packages mozilla)
+ (ch0r0ng packages wm)
  (gnu services)
  (gnu system shadow)
  (guix channels)
- (ch0r0ng services network)
  (srfi srfi-1))
 
 
@@ -50,6 +51,7 @@
     sway
     hyprland
     slurp
+    mangowc-git
     wl-clipboard
     grim
     gtk+
@@ -68,13 +70,15 @@
     podman-compose
     font-google-noto-emoji
     font-awesome-nonfree
-    font-sf-mono
+    font-apple-sf-mono
     font-lxgw-wenkai-tc
     qtwayland
     emacs-pgtk
     xwayland-satellite
     waybar
+    intel-media-driver/nonfree
     helix
+    (specification->package "firefox@144.0")
     niri
     starship))
 
@@ -86,20 +90,19 @@
     (simple-service
      'defenv home-environment-variables-service-type
      ;;proxy
-     `(("https_proxy" . "http://127.0.0.1:7890")
-       ("http_proxy"  . "http://127.0.0.1:7890")
-       ("HTTP_PROXY"  . "http://127.0.0.1:7890")
-       ("HTTPS_PROXY"  . "http://127.0.0.1:7890")
+     ;`(("https_proxy" . "http://127.0.0.1:7890")
+     ;  ("http_proxy"  . "http://127.0.0.1:7890")
+     ;  ("HTTP_PROXY"  . "http://127.0.0.1:7890")
+     ;  ("HTTPS_PROXY"  . "http://127.0.0.1:7890")
 
 
-       ("MOZ_ENABLE_WAYLAND" . "1")
+      `(("MOZ_ENABLE_WAYLAND" . "1")
 
        ;;input method
        ("GTK_IM_MODULE" . "fcitx")
        ("QT_IM_MODULE" . "fcitx")
        ("QT_PLUGIN_PATH" . "${HOME}/.guix-home/profile/lib/qt6/plugins")
        ("GUIX_GTK3_IM_MODULE_FILE" . "${HOME}/.guix-home/profile/lib/gtk-3.0/3.0.0/immodules-gtk3.cache")))
-    (service home-clash-service-type)
     (service home-pipewire-service-type)
     (service home-dbus-service-type))
    %base-home-services)))

@@ -10,6 +10,7 @@
  (gnu services sound)
  (gnu services dbus)
  (gnu services containers)
+ (ch0r0ng services networking)
  (gnu system accounts)
  (guix channels))
 
@@ -47,6 +48,8 @@
     (service dhcpcd-service-type)
     (service polkit-service-type)
     (service iptables-service-type)
+    (service dae-service-type
+             (dae-service-configuration (config-file "/home/srus/.config/dae/config.dae")))
     (service rootless-podman-service-type
              (rootless-podman-configuration
               (subgids
@@ -69,7 +72,6 @@
       (privileged? #f)
       (substitute-urls
        '("https://mirror.sjtu.edu.cn/guix"
-         "https://mirror.sjtu.edu.cn/guix-bordeaux"
          "https://ci.guix.moe"
          "https://ci.guix.gnu.org"
          "https://bordeaux.guix.gnu.org"))
@@ -101,7 +103,7 @@
           (make-channel-introduction
            "9edb3f66fd807b096b48283debdcddccfea34bad"
            (openpgp-fingerprint
-            "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))))))))
+            "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA")))))))))))
 
  (bootloader
   (bootloader-configuration
@@ -114,12 +116,12 @@
    (list
     (file-system
      (mount-point "/boot")
-     (device (uuid "77C8-08A2"
+     (device (uuid "EF9B-4D6D"
                    'fat32))
      (type "vfat"))
     (file-system
      (mount-point "/")
      (device (uuid
-              "5f08f6e0-4fe9-437d-97e7-51df1f4c5698"
+              "6324f9fd-e555-49be-8f7b-8950349fecd8"
               'ext4))
      (type "ext4"))) %base-file-systems)))
