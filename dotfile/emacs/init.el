@@ -10,3 +10,23 @@
 (global-display-line-numbers-mode 1)         ; 在 Window 显示行号
 (tool-bar-mode -1)                           ; （熟练后可选）关闭 Tool bar
 (when (display-graphic-p) (toggle-scroll-bar -1)) ; 图形界面时关闭滚动条
+
+
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(package-initialize)
+
+(use-package rust-mode
+  :ensure t
+  :mode "\\.rs\\'"
+  :hook (rust-mode . eglot-ensure))
+
+(setq rust-format-on-save t)
+
+(add-hook 'rust-mode-hook
+	  (lambda () (setq indent-tabs-mode nil)))
+
+(use-package company
+  :ensure t
+  :config
+  (global-company-mode 1))
