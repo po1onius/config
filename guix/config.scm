@@ -72,6 +72,7 @@
       (privileged? #f)
       (substitute-urls
        '("https://mirror.sjtu.edu.cn/guix"
+         "https://mirror.sjtu.edu.cn/guix-bordeaux"
          "https://ci.guix.moe"
          "https://ci.guix.gnu.org"
          "https://bordeaux.guix.gnu.org"))
