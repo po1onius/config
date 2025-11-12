@@ -17,8 +17,7 @@
 
   networking = {
     hostName = "nixos";
-    # wireless.iwd.enable = true;
-    proxy.default = "http://127.0.0.1:7890";
+    wireless.iwd.enable = true;
     nameservers = [ "8.8.8.8" ];
   };
 
@@ -32,7 +31,7 @@
     fcitx5 = {
       waylandFrontend = false;
       addons = with pkgs; [
-        fcitx5-chinese-addons
+        qt6Packages.fcitx5-chinese-addons
         fcitx5-rose-pine
       ];
     };
@@ -42,13 +41,12 @@
     packages =
       with pkgs;
       [
-        intel-one-mono
         nerd-fonts.fira-code
         lxgw-wenkai
-        noto-fonts-emoji
+        noto-fonts-color-emoji
       ]
       ++ [
-        sf-fonts.packages."${pkgs.system}".sf-mono
+        sf-fonts.packages."${pkgs.stdenv.hostPlatform.system}".sf-mono
       ];
   };
 
@@ -57,10 +55,11 @@
       enable = true;
       pulse.enable = true;
     };
-    v2raya.enable = true;
     displayManager.gdm.enable = true;
-    desktopManager.gnome.enable = true;
-    xserver.enable = true;
+    dae = {
+      enable = true;
+      configFile = ./static/config.dae;
+    };
   };
 
   users.users.srus = {
@@ -76,6 +75,7 @@
     packages = with pkgs; [
       google-chrome
       starship
+      firefox
       alacritty
       helix
       (vscode.override { commandLineArgs = "--ozone-platform=wayland"; }).fhs
@@ -84,7 +84,7 @@
       rofi
       qq
       nixd
-      nixfmt-rfc-style
+      nixfmt
       # grim
       # wl-clipboard
       # slurp
@@ -125,6 +125,9 @@
     "nix-command"
     "flakes"
   ];
+
+  nix.settings.substituters = [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
+
   nixpkgs.config.allowUnfree = true;
 
   nix.gc = {

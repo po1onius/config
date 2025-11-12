@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     sf-fonts = {
       url = "github:Lyndeno/apple-fonts.nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -14,6 +15,7 @@
       self,
       nixpkgs,
       sf-fonts,
+      determinate,
       ...
     }@inputs:
     {
@@ -22,6 +24,7 @@
         specialArgs = { inherit sf-fonts; };
         modules = [
           ./configuration.nix
+          determinate.nixosModules.default
         ];
       };
     };
