@@ -78,8 +78,6 @@
       firefox
       alacritty
       helix
-      (vscode.override { commandLineArgs = "--ozone-platform=wayland"; }).fhs
-      zed-editor-fhs
       tree
       rofi
       qq
