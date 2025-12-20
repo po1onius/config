@@ -70,6 +70,7 @@
       "video"
       "input"
       "podman"
+      "render"
     ];
     shell = pkgs.fish;
     packages = with pkgs; [
@@ -80,7 +81,9 @@
       helix
       tree
       rofi
-      qq
+      (qq.override {        
+        commandLineArgs = "--ozone-platform=wayland --enable-wayland-ime --wayland-text-input-version=3 --enable-features=WaylandWindowDecorations";
+      })
       nixd
       nixfmt
       # grim
@@ -99,10 +102,15 @@
     };
   };
 
-  environment.systemPackages = with pkgs; [
-    wget
-    git
-  ];
+  environment = {
+    systemPackages = with pkgs; [
+      wget
+      git
+    ];
+    sessionVariables = {
+      LIBVA_DRIVER_NAME = "iHD";
+    };
+  };
 
   programs = {
     fish.enable = true;
@@ -122,7 +130,6 @@
   nixpkgs.overlays = [
     (final: prev: {
       qq = prev.qq.override {
-        commandLineArgs = "--ozone-platform=wayland --enable-wayland-ime --wayland-text-input-version=3 --enable-features=WaylandWindowDecorations";
       };
     })
   ];
@@ -143,5 +150,12 @@
     dates = "weekly";
     options = "--delete-older-than 1w";
   };
-
+  
+  hardware.graphics = {
+    enable = true;
+    extraPackages = with pkgs; [
+      intel-media-driver
+      vpl-gpu-rt
+    ];
+  };
 }
