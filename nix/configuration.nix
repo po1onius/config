@@ -78,8 +78,6 @@
       firefox
       alacritty
       helix
-      (vscode.override { commandLineArgs = "--ozone-platform=wayland"; }).fhs
-      zed-editor-fhs
       tree
       rofi
       qq
@@ -89,6 +87,7 @@
       # wl-clipboard
       # slurp
       podman-compose
+      pax-utils
     ];
   };
 
@@ -109,12 +108,21 @@
     fish.enable = true;
     niri.enable = true;
     waybar.enable = true;
+    obs-studio = {
+      enable = true;
+      plugins = with pkgs.obs-studio-plugins; [
+        wlrobs
+        obs-pipewire-audio-capture
+        obs-gstreamer
+        obs-vkcapture
+      ];
+    };
   };
 
   nixpkgs.overlays = [
     (final: prev: {
       qq = prev.qq.override {
-        commandLineArgs = "--ozone-platform=wayland --enable-wayland-ime --wayland-text-input-version=3 --disable-gpu";
+        commandLineArgs = "--ozone-platform=wayland --enable-wayland-ime --wayland-text-input-version=3 --enable-features=WaylandWindowDecorations";
       };
     })
   ];
