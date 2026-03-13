@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     rust-overlay.url = "github:oxalica/rust-overlay";
+    android-nixpkgs.url = "github:tadfisher/android-nixpkgs";
   };
 
   outputs =
@@ -11,6 +12,7 @@
       self,
       nixpkgs,
       rust-overlay,
+      android-nixpkgs,
     }:
     let
       system = "x86_64-linux";
@@ -32,6 +34,15 @@
         commandLineArgs = "--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true --wayland-text-input-version=3";
       };
 
+      android-sdk = android-nixpkgs.sdk.x86_64-linux (sdkPkgs: with sdkPkgs; [
+        cmdline-tools-latest
+        build-tools-34-0-0
+        platform-tools
+        platforms-android-34
+        ndk-27-1-12297006
+        emulator
+      ]);
+
       fhs = pkgs.buildFHSEnv {
         name = "fhs-shell";
 
@@ -49,6 +60,10 @@
               dioxus-cli
               clang-tools
               llvmPackages.clang-unwrapped
+              bun
+              android-sdk
+              android-studio
+              uv
 
               linuxHeaders
               sqlite
@@ -100,6 +115,9 @@
 
         profile = ''
           export PKG_CONFIG_PATH=/usr/share/pkgconfig:/usr/lib/pkgconfig
+          export ANDROID_HOME=${android-sdk}/share/android-sdk
+          export ANDROID_SDK_ROOT=${android-sdk}/share/android-sdk
+          export JAVA_HOME=${pkgs.jdk.home}
         '';
       };      
     in

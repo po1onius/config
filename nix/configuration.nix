@@ -19,6 +19,9 @@
     hostName = "nixos";
     wireless.iwd.enable = true;
     nameservers = [ "8.8.8.8" ];
+    firewall = {
+      enable = false;
+    };
   };
 
   time.timeZone = "Asia/Shanghai";
@@ -55,11 +58,18 @@
       enable = true;
       pulse.enable = true;
     };
-    displayManager.gdm.enable = true;
-    dae = {
+    xserver = {
       enable = true;
-      configFile = ./static/config.dae;
+      windowManager.i3 = {
+        enable = true;
+        extraPackages = [];
+      };
     };
+    displayManager.gdm.enable = true;
+    # dae = {
+    #   enable = true;
+    #   configFile = ./static/config.dae;
+    # };
   };
 
   users.users.srus = {
@@ -91,6 +101,8 @@
       # slurp
       podman-compose
       pax-utils
+      xwayland-satellite
+      swaylock
     ];
   };
 
@@ -125,6 +137,12 @@
         obs-vkcapture
       ];
     };
+    clash-verge = {
+      enable =  true;
+      tunMode = true;
+      serviceMode = true;
+      autoStart = true;
+    };
   };
 
   nixpkgs.overlays = [
@@ -134,7 +152,7 @@
     })
   ];
 
-  system.stateVersion = "25.05";
+  system.stateVersion = "25.11";
 
   nix.settings.experimental-features = [
     "nix-command"
