@@ -4,7 +4,6 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     rust-overlay.url = "github:oxalica/rust-overlay";
-    android-nixpkgs.url = "github:tadfisher/android-nixpkgs";
   };
 
   outputs =
@@ -12,14 +11,16 @@
       self,
       nixpkgs,
       rust-overlay,
-      android-nixpkgs,
     }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
         inherit system;
         overlays = [ (import rust-overlay) ];
-        config.allowUnfree = true;
+        config = {
+          allowUnfree = true;
+          android_sdk.accept_license = true;
+        };
       };
 
       rustToolchain = pkgs.rust-bin.nightly.latest.default.override {
@@ -34,16 +35,32 @@
         commandLineArgs = "--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true --wayland-text-input-version=3";
       };
 
-      android-sdk = android-nixpkgs.sdk.x86_64-linux (sdkPkgs: with sdkPkgs; [
-        cmdline-tools-latest
-        build-tools-35-0-0
-        build-tools-36-0-0
-        platform-tools
-        platforms-android-36
-        ndk-27-1-12297006
-        emulator
-        cmake-3-22-1
-      ]);
+      androidComposition = (pkgs.androidenv.composeAndroidPackages {
+        platformVersions = [
+          "36"
+          "35"
+          "latest"
+        ];
+        buildToolsVersions = [
+          "35.0.0"
+          "36.0.0"
+          "latest"
+        ];
+        systemImageTypes = [ "google_apis" ];
+        abiVersions = [
+          "armeabi-v7a"
+          "arm64-v8a"
+          "x86_64"
+        ];
+        includeEmulator = true;
+        cmakeVersions = [
+          "3.22.1"
+        ];
+        includeNDK = true;
+        ndkVersion = "27.1.12297006";
+        includeExtras = [ "extras;google;auto" ];
+        includeSystemImages = true;
+      }).androidsdk;
 
       fhs = pkgs.buildFHSEnv {
         name = "fhs-shell";
@@ -63,8 +80,6 @@
               clang-tools
               llvmPackages.clang-unwrapped
               bun
-              android-sdk
-              android-studio
               uv
 
               linuxHeaders
@@ -106,6 +121,7 @@
             ++ [
               vscode
               rustToolchain
+              androidComposition
             ]
           );
 
@@ -117,8 +133,8 @@
 
         profile = ''
           export PKG_CONFIG_PATH=/usr/share/pkgconfig:/usr/lib/pkgconfig
-          export ANDROID_HOME=${android-sdk}/share/android-sdk
-          export ANDROID_SDK_ROOT=${android-sdk}/share/android-sdk
+          export ANDROID_HOME=${androidComposition}/libexec/android-sdk;
+          export ANDROID_NDK_ROOT=${androidComposition}/libexec/android-sdk/ndk-bundle;
           export JAVA_HOME=${pkgs.jdk.home}
         '';
       };      
