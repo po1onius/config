@@ -4,6 +4,10 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     rust-overlay.url = "github:oxalica/rust-overlay";
+    llm-agents = {
+      url = "github:numtide/llm-agents.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -11,6 +15,7 @@
       self,
       nixpkgs,
       rust-overlay,
+      llm-agents
     }:
     let
       system = "x86_64-linux";
@@ -80,7 +85,11 @@
               clang-tools
               llvmPackages.clang-unwrapped
               bun
+              yarn
               uv
+              chromium
+              go
+              libc
 
               linuxHeaders
               sqlite
@@ -88,11 +97,11 @@
               openssl
               libbpf
               zlib
-              xorg.libXi
-              xorg.libX11
-              xorg.libXtst
-              xorg.xorgproto
-              xorg.libxcb
+              libXi
+              libX11
+              libXtst
+              xorgproto
+              libxcb
               libxcursor
               libinput
               vulkan-loader
@@ -117,12 +126,17 @@
               gdk-pixbuf
               harfbuzz
               file
+              fontconfig
+              postgresql.dev
             ]
             ++ [
               vscode
               rustToolchain
               androidComposition
-            ]
+            ] ++ (with llm-agents.packages.${pkgs.stdenv.hostPlatform.system}; [
+              codex
+              claude-code
+            ])
           );
 
         extraOutputsToInstall = [

@@ -87,7 +87,7 @@
       google-chrome
       starship
       firefox
-      alacritty
+      ghostty
       helix
       tree
       rofi
