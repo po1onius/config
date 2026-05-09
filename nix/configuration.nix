@@ -17,7 +17,7 @@
 
   networking = {
     hostName = "nixos";
-    wireless.iwd.enable = true;
+    # wireless.iwd.enable = true;
     nameservers = [ "8.8.8.8" ];
     firewall = {
       enable = false;
@@ -58,18 +58,11 @@
       enable = true;
       pulse.enable = true;
     };
-    xserver = {
-      enable = true;
-      windowManager.i3 = {
-        enable = true;
-        extraPackages = [];
-      };
-    };
     displayManager.gdm.enable = true;
-    # dae = {
-    #   enable = true;
-    #   configFile = ./static/config.dae;
-    # };
+    desktopManager.gnome.enable = true;
+    gnome.core-apps.enable = false;
+    gnome.core-developer-tools.enable = false;
+    gnome.games.enable = false;
   };
 
   users.users.srus = {
@@ -90,7 +83,6 @@
       ghostty
       helix
       tree
-      rofi
       (qq.override {        
         commandLineArgs = "--ozone-platform=wayland --enable-wayland-ime --wayland-text-input-version=3 --enable-features=WaylandWindowDecorations";
       })
@@ -118,6 +110,7 @@
     systemPackages = with pkgs; [
       wget
       git
+      gnomeExtensions.appindicator
     ];
     sessionVariables = {
       LIBVA_DRIVER_NAME = "iHD";
@@ -126,8 +119,8 @@
 
   programs = {
     fish.enable = true;
-    niri.enable = true;
-    waybar.enable = true;
+    #niri.enable = true;
+    #waybar.enable = true;
     obs-studio = {
       enable = true;
       plugins = with pkgs.obs-studio-plugins; [
