@@ -17,7 +17,7 @@
 
   networking = {
     hostName = "nixos";
-    # wireless.iwd.enable = true;
+    wireless.iwd.enable = true;
     nameservers = [ "8.8.8.8" ];
     firewall = {
       enable = false;
@@ -59,10 +59,10 @@
       pulse.enable = true;
     };
     displayManager.gdm.enable = true;
-    desktopManager.gnome.enable = true;
-    gnome.core-apps.enable = false;
-    gnome.core-developer-tools.enable = false;
-    gnome.games.enable = false;
+    #desktopManager.gnome.enable = true;
+    #gnome.core-apps.enable = false;
+    #gnome.core-developer-tools.enable = false;
+    #gnome.games.enable = false;
   };
 
   users.users.srus = {
@@ -93,7 +93,6 @@
       # slurp
       podman-compose
       pax-utils
-      xwayland-satellite
       swaylock
     ];
   };
@@ -110,7 +109,6 @@
     systemPackages = with pkgs; [
       wget
       git
-      gnomeExtensions.appindicator
     ];
     sessionVariables = {
       LIBVA_DRIVER_NAME = "iHD";
@@ -119,6 +117,7 @@
 
   programs = {
     fish.enable = true;
+    mangowc.enable = true;
     #niri.enable = true;
     #waybar.enable = true;
     obs-studio = {
