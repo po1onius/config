@@ -1,0 +1,6 @@
+font-family = "SF Mono"
+font-size = 12
+theme = dracula
+window-width = 110
+window-height = 35
+background-opacity = 0.9
