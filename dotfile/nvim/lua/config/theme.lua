@@ -7,6 +7,29 @@ local themes = {
   "gruvbox",
 }
 
+local transparent_groups = {
+  "Normal",
+  "NormalNC",
+  "NormalFloat",
+  "FloatBorder",
+  "FloatTitle",
+  "SignColumn",
+  "FoldColumn",
+  "LineNr",
+  "CursorLineNr",
+  "EndOfBuffer",
+  "MsgArea",
+  "StatusLine",
+  "StatusLineNC",
+  "WinSeparator",
+  "Pmenu",
+  "PmenuSel",
+  "NeoTreeNormal",
+  "NeoTreeNormalNC",
+  "NeoTreeEndOfBuffer",
+  "LazyNormal",
+}
+
 local function contains(list, value)
   for _, item in ipairs(list) do
     if item == value then
@@ -14,6 +37,16 @@ local function contains(list, value)
     end
   end
   return false
+end
+
+function M.apply_transparency()
+  if vim.g.transparent_background == false then
+    return
+  end
+
+  for _, group in ipairs(transparent_groups) do
+    vim.cmd.highlight({ args = { group, "guibg=NONE", "ctermbg=NONE" } })
+  end
 end
 
 function M.set(name)
@@ -28,6 +61,7 @@ function M.set(name)
     return
   end
 
+  M.apply_transparency()
   vim.g.user_theme = name
 end
 
@@ -47,6 +81,13 @@ function M.cycle()
 end
 
 function M.setup()
+  vim.g.transparent_background = vim.g.transparent_background ~= false
+
+  vim.api.nvim_create_autocmd("ColorScheme", {
+    group = vim.api.nvim_create_augroup("user-transparent-background", { clear = true }),
+    callback = M.apply_transparency,
+  })
+
   vim.api.nvim_create_user_command("Theme", function(args)
     M.set(args.args)
   end, {
@@ -64,4 +105,3 @@ function M.setup()
 end
 
 return M
-
