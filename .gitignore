@@ -2,3 +2,4 @@ lazy-lock.json
 flake.lock
 .agents/
 .codex/
+*.log

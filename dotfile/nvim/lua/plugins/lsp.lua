@@ -101,14 +101,14 @@ return {
             vim.lsp.buf.format({ bufnr = bufnr, timeout_ms = 3000 })
           end, "Format buffer")
 
-          if client and client.supports_method("textDocument/inlayHint") and vim.lsp.inlay_hint then
+          if client and client:supports_method("textDocument/inlayHint", bufnr) and vim.lsp.inlay_hint then
             map("n", "<leader>lh", function()
               local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr })
               vim.lsp.inlay_hint.enable(not enabled, { bufnr = bufnr })
             end, "Toggle inlay hints")
           end
 
-          if client and format_on_save_clients[client.name] and client.supports_method("textDocument/formatting") then
+          if client and format_on_save_clients[client.name] and client:supports_method("textDocument/formatting", bufnr) then
             local group = vim.api.nvim_create_augroup("user-lsp-format-on-save", { clear = false })
 
             vim.api.nvim_clear_autocmds({ group = group, buffer = bufnr })
