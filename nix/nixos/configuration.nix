@@ -17,7 +17,7 @@
 
   networking = {
     hostName = "nixos";
-    wireless.iwd.enable = true;
+    # wireless.iwd.enable = true;
     nameservers = [ "8.8.8.8" ];
     firewall = {
       enable = false;
@@ -59,10 +59,10 @@
       pulse.enable = true;
     };
     displayManager.gdm.enable = true;
-    #desktopManager.gnome.enable = true;
-    #gnome.core-apps.enable = false;
-    #gnome.core-developer-tools.enable = false;
-    #gnome.games.enable = false;
+    desktopManager.gnome.enable = true;
+    gnome.core-apps.enable = false;
+    gnome.core-developer-tools.enable = false;
+    gnome.games.enable = false;
   };
 
   users.users.srus = {
@@ -77,23 +77,19 @@
     ];
     shell = pkgs.fish;
     packages = with pkgs; [
-      google-chrome
+      #google-chrome
       starship
       firefox
       ghostty
-      helix
+      neovim
       tree
-      (qq.override {        
+      (qq.override {
         commandLineArgs = "--ozone-platform=wayland --enable-wayland-ime --wayland-text-input-version=3 --enable-features=WaylandWindowDecorations";
       })
       nixd
       nixfmt
-      # grim
-      # wl-clipboard
-      # slurp
       podman-compose
       pax-utils
-      swaylock
     ];
   };
 
@@ -107,8 +103,11 @@
 
   environment = {
     systemPackages = with pkgs; [
+      ripgrep
       wget
       git
+      gnomeExtensions.appindicator
+      gnomeExtensions.system-monitor-next
     ];
     sessionVariables = {
       LIBVA_DRIVER_NAME = "iHD";
@@ -117,7 +116,7 @@
 
   programs = {
     fish.enable = true;
-    mangowc.enable = true;
+    #mangowc.enable = true;
     #niri.enable = true;
     #waybar.enable = true;
     obs-studio = {
@@ -130,19 +129,12 @@
       ];
     };
     clash-verge = {
-      enable =  true;
+      enable = true;
       tunMode = true;
       serviceMode = true;
       autoStart = true;
     };
   };
-
-  nixpkgs.overlays = [
-    (final: prev: {
-      qq = prev.qq.override {
-      };
-    })
-  ];
 
   system.stateVersion = "25.11";
 
@@ -151,7 +143,10 @@
     "flakes"
   ];
 
-  nix.settings.substituters = [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
+  nix.settings.substituters = [
+    "https://mirrors.ustc.edu.cn/nix-channels/store"
+    "https://cache.nixos.org"
+  ];
 
   nixpkgs.config.allowUnfree = true;
 
@@ -160,7 +155,7 @@
     dates = "weekly";
     options = "--delete-older-than 1w";
   };
-  
+
   hardware.graphics = {
     enable = true;
     extraPackages = with pkgs; [
