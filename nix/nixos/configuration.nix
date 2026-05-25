@@ -60,7 +60,6 @@
     };
     displayManager.gdm.enable = true;
     desktopManager.gnome.enable = true;
-    gnome.core-apps.enable = false;
     gnome.core-developer-tools.enable = false;
     gnome.games.enable = false;
   };
@@ -112,6 +111,31 @@
     sessionVariables = {
       LIBVA_DRIVER_NAME = "iHD";
     };
+    gnome.excludePackages = [
+      pkgs.baobab
+      pkgs.decibels
+      pkgs.epiphany
+      pkgs.gnome-text-editor
+      pkgs.gnome-calculator
+      pkgs.gnome-calendar
+      pkgs.gnome-characters
+      pkgs.gnome-clocks
+      pkgs.gnome-console
+      pkgs.gnome-contacts
+      pkgs.gnome-font-viewer
+      pkgs.gnome-logs
+      pkgs.gnome-maps
+      pkgs.gnome-music
+      pkgs.gnome-system-monitor
+      pkgs.gnome-weather
+      pkgs.loupe
+      pkgs.papers
+      pkgs.gnome-connections
+      pkgs.showtime
+      pkgs.simple-scan
+      pkgs.snapshot
+      pkgs.yelp
+    ];
   };
 
   programs = {

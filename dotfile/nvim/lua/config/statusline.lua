@@ -47,6 +47,28 @@ local function diagnostic_text(bufnr)
   return table.concat(parts, " ")
 end
 
+local function git_text(bufnr)
+  local status = vim.b[bufnr].gitsigns_status_dict
+  if not status or not status.head or status.head == "" then
+    return ""
+  end
+
+  local parts = { "Git: " .. status.head }
+  local changes = {
+    { "+", status.added or 0 },
+    { "~", status.changed or 0 },
+    { "-", status.removed or 0 },
+  }
+
+  for _, item in ipairs(changes) do
+    if item[2] > 0 then
+      parts[#parts + 1] = item[1] .. item[2]
+    end
+  end
+
+  return table.concat(parts, " ")
+end
+
 local function progress_text(clients)
   local client_ids = {}
   for _, client in ipairs(clients) do
@@ -101,6 +123,10 @@ function M.lsp()
   return escape_statusline(table.concat(parts, " "))
 end
 
+function M.git()
+  return escape_statusline(git_text(vim.api.nvim_get_current_buf()))
+end
+
 function M.setup()
   _G.UserStatusline = M
 
@@ -109,6 +135,8 @@ function M.setup()
     " %f",
     "%m%r%h%w",
     "%=",
+    "%{v:lua.UserStatusline.git()}",
+    "  ",
     "%{v:lua.UserStatusline.lsp()}",
     "  %y",
     "  %l:%c ",
@@ -118,6 +146,14 @@ function M.setup()
 
   vim.api.nvim_create_autocmd({ "LspAttach", "LspDetach", "DiagnosticChanged", "BufEnter" }, {
     group = group,
+    callback = function()
+      vim.cmd.redrawstatus()
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("User", {
+    group = group,
+    pattern = "GitsignsUpdate",
     callback = function()
       vim.cmd.redrawstatus()
     end,
