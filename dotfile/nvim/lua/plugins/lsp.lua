@@ -14,6 +14,11 @@ return {
       local luasnip = require("luasnip")
 
       cmp.setup({
+        view = {
+          docs = {
+            auto_open = false,
+          },
+        },
         window = {
           completion = cmp.config.window.bordered({
             border = "rounded",
@@ -32,7 +37,21 @@ return {
         mapping = cmp.mapping.preset.insert({
           ["<C-Space>"] = cmp.mapping.complete(),
           ["<C-e>"] = cmp.mapping.abort(),
+          ["<Esc>"] = cmp.mapping(function(fallback)
+            if cmp.visible_docs() then
+              cmp.close_docs()
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
           ["<Tab>"] = cmp.mapping.confirm({ select = true }),
+          ["<C-l>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.open_docs()
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
           ["<C-j>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
               cmp.select_next_item()
