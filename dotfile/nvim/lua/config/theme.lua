@@ -23,11 +23,21 @@ local transparent_groups = {
   "StatusLineNC",
   "WinSeparator",
   "Pmenu",
-  "PmenuSel",
   "NeoTreeNormal",
   "NeoTreeNormalNC",
   "NeoTreeEndOfBuffer",
   "LazyNormal",
+}
+
+local completion_selection = {
+  fg = "#ffffff",
+  bg = "#3d59a1",
+  bold = true,
+}
+
+local completion_border = {
+  fg = "#7aa2f7",
+  bg = "NONE",
 }
 
 local function contains(list, value)
@@ -49,6 +59,18 @@ function M.apply_transparency()
   end
 end
 
+function M.apply_completion_highlights()
+  vim.api.nvim_set_hl(0, "CmpBorder", completion_border)
+  vim.api.nvim_set_hl(0, "PmenuSel", completion_selection)
+  vim.api.nvim_set_hl(0, "PmenuKindSel", completion_selection)
+  vim.api.nvim_set_hl(0, "PmenuExtraSel", completion_selection)
+end
+
+function M.apply_overrides()
+  M.apply_transparency()
+  M.apply_completion_highlights()
+end
+
 function M.set(name)
   if not contains(themes, name) then
     vim.notify("Unknown theme: " .. name, vim.log.levels.WARN)
@@ -61,7 +83,7 @@ function M.set(name)
     return
   end
 
-  M.apply_transparency()
+  M.apply_overrides()
   vim.g.user_theme = name
 end
 
@@ -85,7 +107,7 @@ function M.setup()
 
   vim.api.nvim_create_autocmd("ColorScheme", {
     group = vim.api.nvim_create_augroup("user-transparent-background", { clear = true }),
-    callback = M.apply_transparency,
+    callback = M.apply_overrides,
   })
 
   vim.api.nvim_create_user_command("Theme", function(args)
