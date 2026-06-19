@@ -138,12 +138,11 @@
     {
       devShells.${system}.default = pkgs.mkShell {
         packages = targetPkgs;
+        ANDROID_HOME = "${androidComposition}/libexec/android-sdk";
+        ANDROID_NDK_ROOT = "${androidComposition}/libexec/android-sdk/ndk-bundle";
+        JAVA_HOME = "${pkgs.jdk.home}";
+        GOPATH = "~/.gopath";
         shellHook = ''
-          export PKG_CONFIG_PATH=/usr/share/pkgconfig:/usr/lib/pkgconfig
-          export ANDROID_HOME=${androidComposition}/libexec/android-sdk
-          export ANDROID_NDK_ROOT=${androidComposition}/libexec/android-sdk/ndk-bundle
-          export JAVA_HOME=${pkgs.jdk.home}
-          export GOPATH=~/.gopath
           fish
         '';
       };
