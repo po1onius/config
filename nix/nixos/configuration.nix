@@ -112,9 +112,10 @@
         vscodeExtensions = pkgs.nix4vscode.forVscode [
           "rust-lang.rust-analyzer"
           "vadimcn.vscode-lldb"
-          "monokai.theme-monokai-pro-vscode"
+          "PKief.material-icon-theme"
           "Dart-Code.flutter"
           "Dart-Code.dart-code"
+          "zhuangtongfa.Material-theme"
         ];
       })
     ];

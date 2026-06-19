@@ -39,6 +39,7 @@
       androidComposition =
         (pkgs.androidenv.composeAndroidPackages {
           platformVersions = [
+            "34"
             "36"
             "35"
             "latest"
@@ -59,7 +60,10 @@
             "3.22.1"
           ];
           includeNDK = true;
-          ndkVersion = "27.1.12297006";
+          ndkVersions = [
+            "27.1.12297006"
+            "28.2.13676358"
+          ];
           includeExtras = [ "extras;google;auto" ];
           includeSystemImages = true;
         }).androidsdk;
@@ -69,25 +73,20 @@
         [
           pkg-config
           protobuf
-          gcc
           cmake
           nodejs
           xdotool
           dioxus-cli
-          clang-tools
-          llvmPackages.clang-unwrapped
           bun
           yarn
           uv
           chromium
           go
-          libc
           diesel-cli
           dart
           typescript-language-server
           flutter
-          pkgs.stdenv.cc.cc.lib
-          glibc.dev
+          clangStdenv.cc
 
           linuxHeaders
           sqlite
@@ -106,12 +105,12 @@
           pipewire
           libGL
           libxkbcommon
-          libclang
           wayland
           alsa-lib
           udev
           webkitgtk_4_1
           libappindicator-gtk3
+          libsecret
           librsvg
           glib
           libsoup_3
