@@ -131,6 +131,8 @@ return {
           end, "Format buffer")
 
           if client and client:supports_method("textDocument/inlayHint", bufnr) and vim.lsp.inlay_hint then
+            vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+
             map("n", "<leader>lh", function()
               local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr })
               vim.lsp.inlay_hint.enable(not enabled, { bufnr = bufnr })

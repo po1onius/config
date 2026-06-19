@@ -28,7 +28,7 @@
         };
       };
 
-      rustToolchain = pkgs.rust-bin.nightly.latest.default.override {
+      rustToolchain = pkgs.rust-bin.stable.latest.default.override {
         extensions = [
           "rust-src"
           "rust-analyzer"
@@ -83,6 +83,11 @@
           go
           libc
           diesel-cli
+          dart
+          typescript-language-server
+          flutter
+          pkgs.stdenv.cc.cc.lib
+          glibc.dev
 
           linuxHeaders
           sqlite
@@ -119,7 +124,7 @@
           harfbuzz
           file
           fontconfig
-          postgresql.dev
+          postgresql
         ]
         ++ [
           rustToolchain
@@ -135,9 +140,11 @@
         packages = targetPkgs;
         shellHook = ''
           export PKG_CONFIG_PATH=/usr/share/pkgconfig:/usr/lib/pkgconfig
-          export ANDROID_HOME=${androidComposition}/libexec/android-sdk;
-          export ANDROID_NDK_ROOT=${androidComposition}/libexec/android-sdk/ndk-bundle;
+          export ANDROID_HOME=${androidComposition}/libexec/android-sdk
+          export ANDROID_NDK_ROOT=${androidComposition}/libexec/android-sdk/ndk-bundle
           export JAVA_HOME=${pkgs.jdk.home}
+          export GOPATH=~/.gopath
+          fish
         '';
       };
     };

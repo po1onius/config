@@ -3,6 +3,7 @@
   lib,
   pkgs,
   sf-fonts,
+  nix4vscode,
   ...
 }:
 
@@ -107,6 +108,15 @@
       git
       gnomeExtensions.appindicator
       gnomeExtensions.system-monitor-next
+      (vscode-with-extensions.override {
+        vscodeExtensions = pkgs.nix4vscode.forVscode [
+          "rust-lang.rust-analyzer"
+          "vadimcn.vscode-lldb"
+          "monokai.theme-monokai-pro-vscode"
+          "Dart-Code.flutter"
+          "Dart-Code.dart-code"
+        ];
+      })
     ];
     sessionVariables = {
       LIBVA_DRIVER_NAME = "iHD";
@@ -161,6 +171,10 @@
   };
 
   system.stateVersion = "25.11";
+
+  nixpkgs.overlays = [
+    nix4vscode.overlays.default
+  ];
 
   nix.settings.experimental-features = [
     "nix-command"
