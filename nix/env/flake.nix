@@ -4,10 +4,8 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     rust-overlay.url = "github:oxalica/rust-overlay";
-    llm-agents = {
-      url = "github:numtide/llm-agents.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    codex-cli-nix.url = "github:sadjow/codex-cli-nix";
+    claude-code-nix.url = "github:sadjow/claude-code-nix";
   };
 
   outputs =
@@ -15,13 +13,14 @@
       self,
       nixpkgs,
       rust-overlay,
-      llm-agents,
+      codex-cli-nix,
+      claude-code-nix
     }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
         inherit system;
-        overlays = [ (import rust-overlay) ];
+        overlays = [ (import rust-overlay) claude-code-nix.overlays.default ];
         config = {
           allowUnfree = true;
           android_sdk.accept_license = true;
@@ -88,6 +87,8 @@
           flutter
           clangStdenv.cc
 
+	  claude-code
+
           linuxHeaders
           sqlite
           elfutils
@@ -128,11 +129,9 @@
         ++ [
           rustToolchain
           androidComposition
-        ]
-        ++ (with llm-agents.packages.${pkgs.stdenv.hostPlatform.system}; [
-          codex
-          claude-code
-        ]);
+
+	  codex-cli-nix.packages.${system}.default
+        ];
     in
     {
       devShells.${system}.default = pkgs.mkShell {
