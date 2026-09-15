@@ -13,7 +13,7 @@
      ;; Interactive shell and prompt.
      "fish" "starship"
      ;; Codex from the configured channel, including its runtime helpers.
-     "codex@0.154.0"
+     "codex-bin@0.154.0"
      "bubblewrap"
      ;; Searching, inspecting files, and working with APIs.
      "ripgrep" "fd" "jq" "curl" "file" "tree"

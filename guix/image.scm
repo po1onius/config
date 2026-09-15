@@ -40,24 +40,7 @@
  (services
   (append
    (list
-    (service gnome-desktop-service-type)
-    (service elogind-service-type
-             (elogind-configuration
-              (handle-power-key 'ignore)))
-    (service dhcpcd-service-type)
-    (service rootless-podman-service-type
-             (rootless-podman-configuration
-              (subgids
-               (list
-                (subid-range
-                 (name
-                  "srus"))))
-              (subuids
-               (list
-                (subid-range
-                 (name
-                  "srus"))))))
-   )
+    (service gnome-desktop-service-type))
    (modify-services
     %base-services
     (guix-service-type
@@ -66,9 +49,9 @@
       (inherit config)
       (privileged? #f)
       (substitute-urls
-       '("https://mirror.sjtu.edu.cn/guix"
+       '("https://ci.guix.moe"
+         "https://mirror.sjtu.edu.cn/guix"
          "https://mirror.sjtu.edu.cn/guix-bordeaux"
-         "https://ci.guix.moe"
          "https://ci.guix.gnu.org"
          "https://bordeaux.guix.gnu.org"))
       (channels
@@ -102,22 +85,19 @@
             "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA")))))))))))
 
  (bootloader
-  (bootloader-configuration
+   (bootloader-configuration
    (bootloader grub-efi-bootloader)
-   (targets (list "/boot"))
+   (targets (list "/boot/efi"))
    (keyboard-layout keyboard-layout)))
 
  (file-systems
   (append
    (list
     (file-system
-     (mount-point "/boot")
-     (device (uuid "EF9B-4D6D"
-                   'fat32))
+     (mount-point "/boot/efi")
+     (device (file-system-label "EFI-SYSTEM"))
      (type "vfat"))
     (file-system
      (mount-point "/")
-     (device (uuid
-              "6324f9fd-e555-49be-8f7b-8950349fecd8"
-              'ext4))
+     (device (file-system-label "GUIX-ROOT"))
      (type "ext4"))) %base-file-systems)))

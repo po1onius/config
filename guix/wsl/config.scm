@@ -31,4 +31,18 @@
             (inherit account)
             (shell (wsl-boot-program "liz"))))
           (else account)))
-       (operating-system-users base-os))))
+       (operating-system-users base-os)))
+ (services
+  (modify-services (operating-system-user-services base-os)
+    (guix-service-type config =>
+      (guix-configuration
+       (inherit config)
+       (substitute-urls
+        (cons* "https://ci.guix.moe"
+               (guix-configuration-substitute-urls config)))
+       (authorized-keys
+        (cons*
+         (plain-file
+          "ci-guix-moe.pub"
+          "(public-key (ecc (curve Ed25519) (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))")
+         (guix-configuration-authorized-keys config))))))))
