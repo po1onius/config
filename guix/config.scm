@@ -2,6 +2,7 @@
  (gnu)
  (gnu packages shells)
  (gnu packages linux)
+ (gnu packages window-management)
  (gnu packages version-control)
  (nongnu packages linux)
  (nongnu system linux-initrd)
@@ -10,6 +11,7 @@
  (gnu services sound)
  (gnu services dbus)
  (gnu services containers)
+ (gnu services xorg)
  (ch0r0ng services networking)
  (gnu system accounts)
 )
@@ -35,12 +37,13 @@
                             "input")))
    %base-user-accounts))
 
- (packages (cons git %base-packages))
+ (packages (cons niri
+                  (cons git %base-packages)))
 
  (services
   (append
    (list
-    (service gnome-desktop-service-type)
+    (service gdm-service-type)
     (service elogind-service-type
              (elogind-configuration
               (handle-power-key 'ignore)))
