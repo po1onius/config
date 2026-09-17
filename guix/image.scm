@@ -15,6 +15,7 @@
  (gnu system install)
  (ch0r0ng services networking)
  (ch0r0ng packages codex)
+ (ch0r0ng services clash-verge)
  (gnu system accounts)
  (guix channels))
 
@@ -31,8 +32,18 @@
 ;; only part of the desktop service set.  The GNOME desktop service itself
 ;; adds GNOME Shell and its applications to the system profile.
 (define base-installation-services
-  (cons (service gnome-desktop-service-type)
-        %desktop-services))
+  (cons* (service gnome-desktop-service-type)
+
+         ;; Clash Verge Rev：GUI 装进系统 profile（install-gui? #t），并打开
+         ;; TUN 模式（tun-mode? #t → 加载 tun 内核模块、给 .clash-verge-real
+         ;; 授予 cap_net_admin/cap_net_raw/cap_net_bind_service，并把
+         ;; net.ipv4.conf.{all,default}.rp_filter 设为 2）。
+         (service clash-verge-service-type
+                  (clash-verge-configuration
+                   (install-gui? #t)
+                   (tun-mode? #t)))
+
+         %desktop-services))
 
 (operating-system
  (inherit base-installation-os)
@@ -68,8 +79,10 @@
     (shell (file-append fish "/bin/fish"))
     (group "users")
     (home-directory "/home/srus")
+    ;; "clash-verge" 是服务 socket 所在的组（由 clash-verge 服务创建），
+    ;; GUI 必须以该组身份运行才能控制特权服务。
     (supplementary-groups '("wheel" "netdev" "audio" "video"
-                            "input")))
+                            "input" "clash-verge")))
    %base-user-accounts))
 
  (packages
