@@ -25,6 +25,17 @@
 (define base-installation-os
   (make-installation-os #:efi-only? #f))
 
+;; 'cow-store' 把 /gnu/store 变成 copy-on-write：写入落到指定目标（通常是
+;; 真实磁盘上的挂载点）而不是内存里的 tmpfs，这样 guix pull / guix install
+;; 写进 store 的东西才能持久化（否则重启即失）。它是手动启动的服务：
+;;
+;;     sudo mount /dev/sdX1 /mnt
+;;     sudo herd start cow-store /mnt
+;;
+;; 'cow-store-service' 并没有从 (gnu system install) 导出，只能这样取私有绑定。
+(define cow-store-service
+  (@@ (gnu system install) cow-store-service))
+
 ;; Build the live system on top of %desktop-services rather than
 ;; %base-services.  GNOME cannot come up on %base-services alone: it also
 ;; needs GDM (the display manager), D-Bus, Polkit, elogind, UPower,
@@ -42,6 +53,10 @@
                   (clash-verge-configuration
                    (install-gui? #t)
                    (tun-mode? #t)))
+
+         ;; 复制写 store，默认不自动启动，需要时手动
+         ;; 'sudo herd start cow-store /mnt'。
+         (cow-store-service)
 
          %desktop-services))
 
