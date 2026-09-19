@@ -3,7 +3,10 @@
  (gnu packages shells)
  (gnu packages linux)
  (gnu packages fonts)
+ (gnu packages freedesktop)
+ (gnu packages glib)
  (gnu packages version-control)
+ (gnu packages vim)
  (nongnu packages linux)
  (nongnu system linux-initrd)
  (gnu services networking)
@@ -103,11 +106,19 @@
  (packages
   (append
    (list git
+         neovim
          ;; The GNOME fonts do not cover CJK, so without this the Chinese
          ;; (zh_CN) interface renders as empty boxes.
          font-wqy-zenhei
          ;; Prebuilt OpenAI Codex CLI, from the 'chorong' channel.
-         codex-bin)
+         codex-bin
+         ;; Clash Verge Rev 会在运行时 fork 这些外部命令，而
+         ;; %base-packages 里都没有，缺了就会报「没有那个文件或目录」：
+         ;;   xdg-open     → 设置里的「内核目录」/在文件管理器中显示
+         ;;   xdg-mime     → 注册 clash:// 深链接
+         ;;   gio/gsettings → GNOME 系统代理开关（sysproxy crate）
+         xdg-utils
+         (list glib "bin"))
    (operating-system-packages base-installation-os)))
 
  (services
