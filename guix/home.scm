@@ -4,6 +4,7 @@
              (gnu home services shells)
              ((gnu packages shellutils) #:select (starship))
              (gnu home services)
+ (gnu home services dotfiles)      ;把 ~/config/dotfile 映射进 $HOME
  (gnu packages fcitx5)
  (gnu home services sound)
  (gnu home services desktop)
@@ -92,6 +93,19 @@
               ;; 中文引擎（拼音等）和主题：服务不会自动加，必须显式给
               (input-method-editors (list fcitx5-chinese-addons))
               (themes (list fcitx5-material-color-theme))))
+
+    ;; ── dotfiles：把 ~/config/dotfile 映射进 $HOME ────────────────────
+    ;; layout 'plain 的规则是 <目录>/<相对路径> → ~/<相对路径>，所以 dotfile
+    ;; 里保留了 .config/ 这一层（dotfile/.config/niri/config.kdl →
+    ;; ~/.config/niri/config.kdl）。source-directory 默认就是本文件所在目录，
+    ;; 所以这里写 ../dotfile。默认已排除 *~  *.swp  .git/  .gitignore。
+    ;; 注意：目标会变成指向 /gnu/store 的【只读】符号链接 —— 以后改配置要改
+    ;; ~/config/dotfile/... 再 `guix home reconfigure`；挡路的旧文件会被自动
+    ;; 备份到 ~/<时间戳>-guix-home-legacy-configs-backup/。
+    (service home-dotfiles-service-type
+             (home-dotfiles-configuration
+              (directories '("../dotfile"))
+              (layout 'plain)))
 
    (service home-fish-service-type
             (home-fish-configuration
