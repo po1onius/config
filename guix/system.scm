@@ -4,6 +4,9 @@
  (gnu packages linux)
  (gnu packages window-management)
  (gnu packages version-control)
+ (gnu packages fonts)              ;中文字体（SDDM 登录界面也要用）
+ (gnu packages qt)                 ;qtmultimedia（astronaut 主题需要）
+ (gnu packages display-managers)   ;Qt6 版 sddm 包（默认的 sddm-qt5 是 Qt5 版）
  (nongnu packages linux)
  (nongnu system linux-initrd)
  (gnu services networking)
@@ -12,8 +15,10 @@
  (gnu services dbus)
  (gnu services containers)
  (gnu services xorg)
+ (gnu services sddm)               ;SDDM 登录管理器
  (ch0r0ng services networking)
  (ch0r0ng services clash-verge)
+ (ch0r0ng packages sddm-astronaut-theme)  ;本地 channel 里的 SDDM 主题
  (gnu system accounts)
  (gnu services base)               ;%default-authorized-guix-keys
  (gnu build file-systems)          ;find-partition-by-label、read-partition-uuid
@@ -79,12 +84,34 @@
                             "input" "clash-verge")))
    %base-user-accounts))
 
- (packages (cons* niri git %base-packages))
+ ;; font-lxgw-wenkai（霞鹜文楷）：装进【系统】profile 才能被登录管理器看到。
+ ;; SDDM 的 greeter 以 XDG_DATA_DIRS=/run/current-system/profile/share 启动，
+ ;; fontconfig 会扫 $XDG_DATA_DIRS/*/fonts；系统 profile 里没有中文字体时只能
+ ;; 退回 fontconfig 自带的 DejaVu，中文就显示成方块。
+ (packages (cons* niri git font-lxgw-wenkai
+                  sddm-astronaut-theme   ;SDDM 主题（Qt6，10 套预设）
+                  qtmultimedia           ;必需：Main.qml 顶部无条件 import QtMultimedia
+                  %base-packages))
 
  (services
   (append
    (list
-    (service gdm-service-type)
+    ;; 登录管理器：SDDM（Qt greeter，自带默认主题与 Qt 插件，不依赖 GNOME 的
+    ;; GSettings schema，也不需要 GDM 那套 gdm-file-system-service）。
+    ;; 它自己 provision xorg-server/display-manager，会话目录默认就是
+    ;; /run/current-system/profile/share/{wayland-sessions,xsessions}，
+    ;; 所以 niri 会直接出现在登录界面的会话菜单里。
+    (service sddm-service-type
+             (sddm-configuration
+              (sddm sddm)                      ;★ Qt6 版 greeter（主题 QtVersion=6）
+              (theme "sddm-astronaut-theme")))
+    ;; 下面几个是通用桌面件（%desktop-services 里也有），SDDM 用得到、留着无妨：
+    ;;   x11-socket-directory —— 保证 /tmp/.X11-unix 存在（X11 客户端/XWayland）。
+    ;;   accountsservice      —— 登录界面列用户、记住上次会话。
+    ;;   upower               —— 桌面电源管理。
+    (service x11-socket-directory-service-type)
+    (service accountsservice-service-type)
+    (service upower-service-type)
     (service elogind-service-type
              (elogind-configuration
               (handle-power-key 'ignore)))
