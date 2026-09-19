@@ -50,8 +50,13 @@
 
       `(("MOZ_ENABLE_WAYLAND" . "1")
 
-       ;;硬件视频解码：Arrow Lake 核显要用 iHD 这个 VA-API 后端
+       ;;硬件视频解码：iHD 后端 + 显式指定驱动目录。
+       ;;Guix 编译 libva 时把 mesa 的 lib/dri 烧进了默认搜索路径
+       ;;(gnu/packages/video.scm 的 --with-drivers-path)，而 Intel 驱动不
+       ;;在那儿，所以必须覆盖 LIBVA_DRIVERS_PATH 指到 home profile。
+       ;;注意变量名带 S；guix home 不会自动展开 profile 的搜索路径。
        ("LIBVA_DRIVER_NAME" . "iHD")
+       ("LIBVA_DRIVERS_PATH" . "${HOME}/.guix-home/profile/lib/dri")
 
        ;;input method
        ("GTK_IM_MODULE" . "fcitx")
