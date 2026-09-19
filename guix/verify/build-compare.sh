@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
-# Compare two evaluations of the very same operating-system config:
+# Compare two evaluations of the same operating-system config:
 #
-#   1. baseline   - the pre-change config, with the ESP and root UUIDs spelled
-#                   out as (uuid "…") literals (taken from git history);
-#   2. autodetect - the current config, whose (detect-uuid …) calls read the
-#                   real superblocks at evaluation time.
+#   1. baseline - the pre-change config with the ESP and root UUIDs spelled out
+#                 as (uuid "…") literals (taken from git history);
+#   2. current  - the config as it is now, whose (uuid-by-label …) calls look
+#                 the BOOT/ROOT labels up on disk at evaluation time.
 #
-# Both are pointed at tiny ext4/FAT images carrying *this machine's* UUIDs
-# (image files stand in for the block devices, which only root can read).
-# If the two evaluations produce the same system derivation, the detected
-# UUIDs are exactly the ones that used to be hard-coded.
+# Both are pointed at tiny ext4/FAT images carrying *this machine's* UUIDs.  If
+# the two evaluations yield the same system derivation, the labels resolve to
+# exactly the UUIDs that used to be hard-coded.
 #
-# Usage, from anywhere (the script must live in the repo it checks):
+# Usage (the script must live in the repo it checks):
 #   bash ~/config/guix/verify/build-compare.sh [work-dir]
 set -euo pipefail
 
@@ -20,75 +19,53 @@ repo="$(cd "$here/../.." && pwd)"
 work="${1:-${TMPDIR:-/tmp}/guix-uuid-verify}"
 
 root_uuid="8644af7e-f898-439f-87a6-5590b990c1b5"   # this machine's root ext4
-esp_uuid="9074-DBF7"                               # this machine's ESP FAT
+boot_uuid="9074-DBF7"                              # this machine's ESP FAT
 
+export PATH="/run/current-system/profile/bin:/run/current-system/profile/sbin:$PATH"
 mkdir -p "$work"
 cd "$work"
 
-echo "== test images with this machine's UUIDs =="
-if [ ! -f root.img ]; then
-  truncate -s 32M root.img
-  mke2fs -q -t ext4 -U "$root_uuid" -L GUIX_ROOT -F root.img
-fi
-if [ ! -f esp.img ]; then
-  truncate -s 8M esp.img
-  mkfs.fat -F 32 -i "${esp_uuid/-/}" -n GUIX_ESP esp.img
-fi
-blkid -s UUID -s LABEL -o value root.img
-blkid -s UUID -s LABEL -o value esp.img
+echo "== 测试镜像（标签 ROOT / BOOT，UUID 用本机真实值）=="
+[ -f root.img ] || { truncate -s 32M root.img
+                     mke2fs -q -t ext4 -U "$root_uuid" -L ROOT -F root.img; }
+[ -f boot.img ] || { truncate -s 8M boot.img
+                     mkfs.fat -F 32 -i "${boot_uuid/-/}" -n BOOT boot.img; }
+blkid -s LABEL -s UUID -o value root.img
+blkid -s LABEL -s UUID -o value boot.img
 
 echo
-echo "== baseline config (hard-coded UUIDs, from git history) =="
-# The commit that introduced detect-uuid is the first one whose parent still
-# has the literal UUIDs; take its parent explicitly.
-base_commit="$(git -C "$repo" log --format=%H --reverse \
-                --grep='detect file system UUIDs' | head -1)"
-base_commit="${base_commit:-$(git -C "$repo" rev-parse HEAD)}"
-git -C "$repo" show "${base_commit}~1:guix/system.scm" > baseline.scm
+echo "== baseline：改写前那份写死 UUID 的配置（从 git 历史取）=="
+base=""
+for c in $(git -C "$repo" log --format=%H -20); do
+  if git -C "$repo" show "$c:guix/system.scm" | grep -q 'uuid "8644af7e'; then
+    base="$c"; break
+  fi
+done
+if [ -z "$base" ]; then
+  echo "在最近 20 个提交里找不到写死 UUID 的 guix/system.scm" >&2
+  exit 1
+fi
+git -C "$repo" show "$base:guix/system.scm" > baseline.scm
 grep -n 'uuid "' baseline.scm | head
 
 echo
-echo "== autodetect config, pointed at the images =="
-guile --no-auto-compile -c "
-(use-modules (ice-9 pretty-print))
-(define (read-all port)
-  (let loop ((forms '()))
-    (let ((form (read port)))
-      (if (eof-object? form) (reverse forms) (loop (cons form forms))))))
-(define (image-detect fs)
-  (let* ((point (cadr (assq 'mount-point (cdr fs))))
-         (img (cond ((equal? point \"/\") \"$work/root.img\")
-                    ((equal? point \"/boot/efi\") \"$work/esp.img\")
-                    (else #f)))
-         (type (if (equal? point \"/\") 'ext4 'fat32)))
-    (if img
-        (map (lambda (f)
-               (if (and (pair? f) (eq? (car f) 'device))
-                   (list 'device (list 'detect-uuid (list 'quote type) #:device img))
-                   f))
-             fs)
-        fs)))
-(define (rewrite x)
-  (cond ((and (list? x) (pair? x) (eq? (car x) 'file-system)) (image-detect x))
-        ((list? x) (map rewrite x))
-        (else x)))
-(for-each (lambda (f) (pretty-print (rewrite f)) (newline))
-          (read-all (open-input-file \"$repo/guix/system.scm\")))
-" > autodetect.scm
-grep -n "detect-uuid '" autodetect.scm
+echo "== current：现在的配置，把两个文件系统重定向到镜像 =="
+guile --no-auto-compile "$here/redirect-to-images.scm" \
+      "$repo/guix/system.scm" "$work/root.img" "$work/boot.img" > current-img.scm
+grep -n "uuid-by-label" current-img.scm | head
 
 echo
-echo "== evaluating both =="
-a="$(guix system build --no-grafts --dry-run --derivation autodetect.scm 2>/dev/null | tail -1)"
+echo "== 分别求值 =="
+a="$(guix system build --no-grafts --dry-run --derivation current-img.scm 2>/dev/null | tail -1)"
 b="$(guix system build --no-grafts --dry-run --derivation baseline.scm 2>/dev/null | tail -1)"
-echo "autodetect: $a"
-echo "baseline  : $b"
+echo "current : $a"
+echo "baseline: $b"
 
-if [ "$a" = "$b" ]; then
+if [ -n "$a" ] && [ "$a" = "$b" ]; then
   echo
-  echo "OK: identical system derivation - detected UUIDs == hard-coded UUIDs"
+  echo "OK: 两条配置算出同一个 system derivation —— 标签解析出的 UUID 和原来写死的一致"
 else
   echo
-  echo "MISMATCH: the evaluations differ" >&2
+  echo "MISMATCH 或求值失败" >&2
   exit 1
 fi

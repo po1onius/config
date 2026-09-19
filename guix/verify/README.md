@@ -1,55 +1,86 @@
-# UUID 自动检测的验证
+# UUID 自动检测（按固定标签）
 
-`guix/system.scm` 里的文件系统 UUID 不再写死，而是在求值配置时用
-`detect-uuid` 从设备上读出来（依次尝试文件系统标签、块设备、以及从
-`/proc/self/mountinfo` 反查挂载点）。这里的两个脚本就是用来验证它确实
-检测到了正确的 UUID。
+`guix/system.scm` 里不再写死 UUID，也不依赖 `/dev/nvme0n1pX` 这类设备名：
+求值配置时按**固定标签**去盘上找这两个文件系统，读出它们的 UUID。
 
-## build-compare.sh —— 最有力的那条证据
+| 挂载点 | 标签 | 类型 |
+|---|---|---|
+| `/` | `ROOT` | ext4 |
+| `/boot/efi` | `BOOT` | FAT32 |
 
-思路：把**改动前**那份写死 UUID 的配置（从 git 历史里取）和**现在**这份
-自动检测的配置，都指向同一组带着本机真实 UUID 的 ext4/FAT 镜像（镜像文件
-代替块设备，因为只有 root 能读真设备），分别求值，然后比较系统 derivation。
-两条配置算出的 derivation 完全相同，就说明"检测出来的 UUID"和"原来写死的
-UUID"在配置里完全等价。
+配置里就两行：
+
+```scheme
+(device (uuid-by-label %boot-label 'fat32))   ; %boot-label = "BOOT"
+(device (uuid-by-label %root-label 'ext4))    ; %root-label  = "ROOT"
+```
+
+## 先给磁盘打标签
+
+**必须先把标签打好再 reconfigure**，否则 `uuid-by-label` 会直接报错
+（它找不到标签就不会继续，这是故意的）。Ext4 和 FAT 的标签都能在挂载状态下改：
+
+```sh
+# 根文件系统（ext4）
+sudo e2label /dev/nvme0n1p2 ROOT
+
+# EFI 系统分区（FAT32）；fatlabel 会把标签写进 BPB，UEFI 固件看的是分区 GUID，
+# 不受影响
+sudo fatlabel /dev/nvme0n1p1 BOOT
+
+# 确认
+blkid -s LABEL -s UUID /dev/nvme0n1p1 /dev/nvme0n1p2
+ls /dev/disk/by-label/
+```
+
+全新安装时直接在 mkfs 阶段打上即可：
+
+```sh
+mkfs.ext4 -L ROOT  /dev/xxx2
+mkfs.fat  -F 32 -n BOOT /dev/xxx1
+```
+
+## 求值前提
+
+读超级块需要 **root**，设备节点也必须存在（udev 就绪）：
+
+```sh
+sudo guix system reconfigure ~/config/guix/system.scm
+```
+
+## uuid-verify-label.scm
+
+```sh
+cd guix/verify
+guix repl < uuid-verify-label.scm
+```
+
+现场造两个镜像（ext4 标签 `ROOT`、FAT32 标签 `BOOT`，UUID 用本机真实值），
+把 `find-partition-by-label` 指向它们，然后验证：
+
+- `uuid-by-label` 读出的就是 `8644af7e-…` 和 `9074-DBF7`，与字面量 `uuid=` 相等；
+- 生成的 `file-system` 记录里的 device 字符串正确；
+- 三种错误路径（标签不存在 / 类型字节数不符 / 设备读不出）都会 `error`，
+  而不是静默返回 `#f`。
+
+## build-compare.sh
 
 ```sh
 bash ~/config/guix/verify/build-compare.sh [工作目录]
 ```
 
-期望输出结尾：
-
-```
-OK: identical system derivation - detected UUIDs == hard-coded UUIDs
-```
-
-## uuid-verify-io.scm —— 逐个函数验证
-
-在本目录下运行，会：
-
-1. 从 `../system.scm` 里原样抽出 `uuid-bytes->uuid`、`device-for-mount-point`、
-   `read-uuid-by-label`、`detect-uuid` 四个函数并加载；
-2. 用当前机器的 `/proc/self/mountinfo` 验证挂载点->设备的反查；
-3. 现场创建 `verify-root.img`（ext4，UUID 与 `blkid` 对拍）和
-   `verify-esp.img`（FAT32），验证 `detect-uuid` 读出的 UUID 与镜像上的
-   真实 UUID 一致，并且与字面量 `uuid=` 相等。
-
-```sh
-cd guix/verify
-guix repl < uuid-verify-io.scm
-```
+拿 git 历史里那份写死 UUID 的配置做 baseline，两份配置都指向同一组镜像，
+比较求值出的 system derivation 是否相同——相同就说明"标签解析出的 UUID"和
+"原来写死的 UUID"完全等价。
 
 ## 已知的、与本次改动无关的构建阻塞
 
-在本机（根分区只读挂载）跑完整的 `guix system build guix/system.scm` 目前会
-失败，但**改动前的配置也同样失败**——同一个 system derivation，两条配置算出
-来就是同一个：
+本机（根分区只读挂载）跑完整 `guix system build` 会卡在：
 
 ```
 builder for '…-elogind-dbus-service-wrapper.drv' failed
-i/o error: /gnu/store/5imm3ld63fybrphlydqz5pr54zzr7d6k-elogind-257.14/share/dbus-1/system-services: No such file or directory
+i/o error: /gnu/store/…-elogind-257.14/share/dbus-1/system-services: No such file or directory
 ```
 
-即 store 里的 elogind 输出缺少 `share/dbus-1/system-services` 目录，导致
-`etc.drv` 建不出来，属于 store 不一致，不是 UUID 的问题。要真正 `reconfigure`
-的话，需要先修这个（例如重新构建/替换 elogind 那个 store 项）。
+store 里的 elogind 输出缺少 `share/dbus-1/system-services`，`etc.drv` 因此建不出来。
+改动前的配置也是同样结果，属于 store 不一致，不是 UUID 的问题。
