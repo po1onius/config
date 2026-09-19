@@ -3,17 +3,20 @@
              ((gnu packages) #:select (specifications->packages))
              (gnu home services shells)
              ((gnu packages shellutils) #:select (starship))
+             (gnu home services)
+ (gnu packages fcitx5)
+ (gnu home services sound)
+ (gnu home services desktop)
              (guix gexp))
 
 (home-environment
  (packages
   (specifications->packages
    '(;; Editing, repositories, and terminal sessions.
-     "git" "neovim" "github-cli" "openssh" "tmux"
+     "git" "neovim" "openssh" "tmux"
      ;; Interactive shell and prompt.
-     "fish" "starship"
+     "starship" "alacritty" "google-chrome-stable" "font-lxgw-wenkai" "font-apple-sf-mono" "rofi"
      ;; Codex from the configured channel, including its runtime helpers.
-     "codex-bin@0.154.0"
      "bubblewrap"
      ;; Searching, inspecting files, and working with APIs.
      "ripgrep" "fd" "jq" "curl" "file" "tree"
@@ -22,9 +25,36 @@
      ;; C/C++ builds and native Python/Node.js dependencies.
      "gcc-toolchain@14" "make" "pkg-config" "cmake" "ninja"
      ;; Archive formats not already provided by the base system.
-     "zip" "unzip")))
+     "zip" "unzip"
+    "fcitx5"
+    "fcitx5-qt"
+    "fcitx5-gtk"
+    "fcitx5-gtk4"
+    "fcitx5-configtool"
+    "fcitx5-chinese-addons"
+    "fcitx5-material-color-theme"
+ )))
  (services
-  (list
+  (list 
+    (simple-service
+     'defenv home-environment-variables-service-type
+     ;;proxy
+     ;`(("https_proxy" . "http://127.0.0.1:7890")
+     ;  ("http_proxy"  . "http://127.0.0.1:7890")
+     ;  ("HTTP_PROXY"  . "http://127.0.0.1:7890")
+     ;  ("HTTPS_PROXY"  . "http://127.0.0.1:7890")
+
+
+      `(("MOZ_ENABLE_WAYLAND" . "1")
+
+       ;;input method
+       ("GTK_IM_MODULE" . "fcitx")
+       ("QT_IM_MODULE" . "fcitx")
+       ("QT_PLUGIN_PATH" . "${HOME}/.guix-home/profile/lib/qt6/plugins")
+       ("GUIX_GTK3_IM_MODULE_FILE" . "${HOME}/.guix-home/profile/lib/gtk-3.0/3.0.0/immodules-gtk3.cache")))
+    (service home-pipewire-service-type)
+ 
+    (service home-dbus-service-type)
    (service home-fish-service-type
             (home-fish-configuration
              (config

@@ -13,6 +13,7 @@
  (gnu services containers)
  (gnu services xorg)
  (ch0r0ng services networking)
+ (ch0r0ng services clash-verge)
  (gnu system accounts)
 )
 
@@ -28,17 +29,16 @@
  (users
   (cons
    (user-account
-    (name "srus")
-    (comment "srus")
+    (name "liz")
+    (comment "liz")
     (shell (file-append fish "/bin/fish"))
     (group "users")
-    (home-directory "/home/srus")
+    (home-directory "/home/liz")
    (supplementary-groups '("wheel" "netdev" "audio" "video"
-                            "input")))
+                            "input" "clash-verge")))
    %base-user-accounts))
 
- (packages (cons niri
-                  (cons git %base-packages)))
+ (packages (cons* niri git %base-packages))
 
  (services
   (append
@@ -47,19 +47,15 @@
     (service elogind-service-type
              (elogind-configuration
               (handle-power-key 'ignore)))
+    (service bluetooth-service-type)
+    (service iwd-service-type)
     (service dhcpcd-service-type)
-    (service rootless-podman-service-type
-             (rootless-podman-configuration
-              (subgids
-               (list
-                (subid-range
-                 (name
-                  "srus"))))
-              (subuids
-               (list
-                (subid-range
-                 (name
-                  "srus"))))))
+    (service clash-verge-service-type
+                  (clash-verge-configuration
+                   (install-gui? #t)
+                   (tun-mode? #t)))
+
+   (service polkit-service-type)
    )
    (modify-services
     %base-services
@@ -79,20 +75,20 @@
  (bootloader
   (bootloader-configuration
    (bootloader grub-efi-bootloader)
-   (targets (list "/boot"))
+   (targets (list "/boot/efi"))
    (keyboard-layout keyboard-layout)))
 
  (file-systems
   (append
    (list
     (file-system
-     (mount-point "/boot")
-     (device (uuid "EF9B-4D6D"
+     (mount-point "/boot/efi")
+     (device (uuid "9074-DBF7"
                    'fat32))
      (type "vfat"))
     (file-system
      (mount-point "/")
      (device (uuid
-              "6324f9fd-e555-49be-8f7b-8950349fecd8"
+              "8644af7e-f898-439f-87a6-5590b990c1b5"
               'ext4))
      (type "ext4"))) %base-file-systems)))
