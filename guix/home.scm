@@ -24,7 +24,7 @@
    '(;; Editing, repositories, and terminal sessions.
      "git" "neovim" "openssh" "tmux"
      ;; Interactive shell and prompt.
-     "starship" "alacritty" "google-chrome-stable" "font-lxgw-wenkai" "font-apple-sf-mono" "rofi" "firefox"
+     "starship" "alacritty" "google-chrome-stable" "font-lxgw-wenkai" "font-apple-sf-mono" "font-awesome" "font-nerd-symbols" "rofi" "firefox"
      ;; 状态栏 waybar（home-waybar 服务默认也用这个包，装进来方便手动调试）
      "waybar"
      ;; Codex from the configured channel, including its runtime helpers.
