@@ -17,6 +17,7 @@
  (gnu system accounts)
  (gnu build file-systems)          ;find-partition-by-label、read-partition-uuid
  (gnu system uuid)                 ;bytevector->uuid
+ (ice-9 format)
  (ice-9 match)                     ;匹配 /proc/self/mountinfo 的字段
  (ice-9 rdelim)                    ;read-line
  )
@@ -39,9 +40,9 @@
   "把 read-partition-uuid 读到的字节向量 BV 变成带类型 TYPE 的 UUID 对象，
 长度不符（DCE UUID 16 字节、FAT UUID 4 字节）时报错，避免张冠李戴。"
   (define expected (if (memq type '(fat fat16 fat32 exfat)) 4 16))
-  (unless (and bv (= (bytevector-length bv) expected))
-    (raise (format #f "读到的 UUID 字节数 ~s 与 ~a 不符（应为 ~a 字节）"
-                   (and bv (bytevector-length bv)) type expected)))
+  (unless (and bv (= (u8vector-length bv) expected))
+    (error (format #f "读到的 UUID 字节数 ~s 与 ~a 不符（应为 ~a 字节）"
+                   (and bv (u8vector-length bv)) type expected)))
   (bytevector->uuid bv type))
 
 (define (device-for-mount-point mount-point)
@@ -92,7 +93,7 @@ MOUNT-POINT 也可以是一个候选列表，按顺序返回第一个命中的�
                          (false-if-exception
                           (uuid-bytes->uuid (read-partition-uuid from-mount) type))))))
     (unless found
-      (raise (format #f "检测不到 ~a 文件系统的 UUID（label=~s device=~s mount-point=~s 解析为 ~s）"
+      (error (format #f "检测不到 ~a 文件系统的 UUID（label=~s device=~s mount-point=~s 解析为 ~s）"
                      type label device mount-point from-mount)))
     found))
 
