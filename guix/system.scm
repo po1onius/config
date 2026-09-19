@@ -15,6 +15,7 @@
  (ch0r0ng services networking)
  (ch0r0ng services clash-verge)
  (gnu system accounts)
+ (gnu services base)               ;%default-authorized-guix-keys
  (gnu build file-systems)          ;find-partition-by-label、read-partition-uuid
  (gnu system uuid)                 ;bytevector->uuid
  (ice-9 format)
@@ -150,6 +151,12 @@ MOUNT-POINT 也可以是一个候选列表，按顺序返回第一个命中的�
          "https://ci.guix.moe"
          "https://ci.guix.gnu.org"
          "https://bordeaux.guix.gnu.org"))
+      ;; ci.guix.moe 上的 nonguix jobset 提供 firefox 等 nonguix 包的预构建
+      ;; 替代品，但它用自己的一把 Ed25519 签名公钥（nuporta）。官方 CI 不
+      ;; 构建 nonguix，所以不授权这把钥匙就永远只能本地编译 firefox。
+      (authorized-keys
+       (cons (local-file "nonguix-ci.guix.moe.pub")
+             %default-authorized-guix-keys))
       )))))
 
  (bootloader
