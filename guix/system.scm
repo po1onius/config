@@ -35,8 +35,8 @@
 ;; 所以请在正在运行的目标系统上以 root 求值，例如：
 ;;   sudo guix system reconfigure ~/config/guix/system.scm
 
-(define %boot-label "BOOT")
-(define %root-label "ROOT")
+(define %boot-label "GX_BOOT")
+(define %root-label "GX_ROOT")
 
 (define (uuid-by-label label type)
   "在磁盘上找文件系统标签为 LABEL 的分区，返回它带类型 TYPE 的 UUID 对象；

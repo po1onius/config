@@ -56,7 +56,6 @@
        ;;在那儿，所以必须覆盖 LIBVA_DRIVERS_PATH 指到 home profile。
        ;;注意变量名带 S；guix home 不会自动展开 profile 的搜索路径。
        ("LIBVA_DRIVER_NAME" . "iHD")
-       ("LIBVA_DRIVERS_PATH" . "${HOME}/.guix-home/profile/lib/dri")
 
        ;;input method
        ("GTK_IM_MODULE" . "fcitx")
