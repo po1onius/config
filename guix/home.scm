@@ -15,9 +15,9 @@
    '(;; Editing, repositories, and terminal sessions.
      "git" "neovim" "openssh" "tmux"
      ;; Interactive shell and prompt.
-     "starship" "alacritty" "google-chrome-stable" "font-lxgw-wenkai" "font-apple-sf-mono" "rofi"
+     "starship" "alacritty" "google-chrome-stable" "font-lxgw-wenkai" "font-apple-sf-mono" "rofi" "firefox"
      ;; Codex from the configured channel, including its runtime helpers.
-     "bubblewrap"
+     "bubblewrap" "codex-bin"
      ;; Searching, inspecting files, and working with APIs.
      "ripgrep" "fd" "jq" "curl" "file" "tree"
      ;; Python project management, JavaScript runtime, and shell checks.
@@ -26,6 +26,9 @@
      "gcc-toolchain@14" "make" "pkg-config" "cmake" "ninja"
      ;; Archive formats not already provided by the base system.
      "zip" "unzip"
+     ;; Hardware video decoding: the VA-API backend for the Intel iGPU
+     ;; (Mesa does NOT ship an Intel VA driver), plus vainfo to check it.
+     "intel-media-driver" "libva-utils"
     "fcitx5"
     "fcitx5-qt"
     "fcitx5-gtk"
@@ -46,6 +49,9 @@
 
 
       `(("MOZ_ENABLE_WAYLAND" . "1")
+
+       ;;硬件视频解码：Arrow Lake 核显要用 iHD 这个 VA-API 后端
+       ("LIBVA_DRIVER_NAME" . "iHD")
 
        ;;input method
        ("GTK_IM_MODULE" . "fcitx")
