@@ -13,6 +13,10 @@
              ((rosenthal home services desktop)
               #:select (home-graphical-session-service-type
                         home-graphical-session-configuration))
+             ;; 本频道：awww（Wayland 壁纸 daemon，swww 改名后的版本）home 服务
+             ((ch0r0ng services awww)
+              #:select (home-awww-service-type
+                        awww-configuration))
              ((rosenthal services desktop)
               #:select (home-waybar-service-type
                         home-fcitx5-service-type
@@ -45,6 +49,9 @@
      "starship" "alacritty" "google-chrome-stable" "font-lxgw-wenkai" "font-apple-sf-mono" "font-awesome" "font-nerd-symbols" "rofi" "firefox"
      ;; 状态栏 waybar（home-waybar 服务默认也用这个包，装进来方便手动调试）
      "waybar"
+     ;; 壁纸 daemon awww（swww 改名后的版本）；服务在 services 里，
+     ;; 装进 profile 是为了方便 awww img / awww query 手动换图调试
+     "awww"
      ;; Codex from the configured channel, including its runtime helpers.
      "bubblewrap" "codex-bin"
      ;; Searching, inspecting files, and working with APIs.
@@ -99,6 +106,15 @@
     ;; 里）；想自定义就写 ~/.config/waybar/{config.jsonc,style.css}。
     (service home-graphical-session-service-type)
     (service home-waybar-service-type)
+    ;; ── 壁纸 awww ────────────────────────────────────────────────
+    ;; 图片放在 dotfile 仓库里：~/config/dotfile/Pictures/wp.jpg
+    ;; home-dotfiles 会把它链成 ~/Pictures/wp.jpg，所以 reconfigure 后即可还原。
+    ;; 和 home-waybar 一样，shepherd 服务 requirement 是 (graphical-session)，
+    ;; 所以要跟上面的 home-graphical-session 成对出现。
+    ;; 换壁纸：替换仓库里那个文件（或改下面的路径）后 reconfigure。
+    (service home-awww-service-type
+             (awww-configuration
+              (wallpaper "/home/liz/Pictures/wp.jpg")))
 
     ;; ── 输入法 fcitx5（同样来自 rosenthal channel）────────────────────
     ;; requirement 是 (dbus graphical-session)：dbus 来自 home-dbus，图形会话
