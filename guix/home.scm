@@ -108,13 +108,16 @@
     (service home-waybar-service-type)
     ;; ── 壁纸 awww ────────────────────────────────────────────────
     ;; 图片放在 dotfile 仓库里：~/config/dotfile/Pictures/wp.jpg
-    ;; home-dotfiles 会把它链成 ~/Pictures/wp.jpg，所以 reconfigure 后即可还原。
+    ;; 这里用 local-file + 相对路径（相对本文件所在目录，即 ~/config/guix/），
+    ;; 和上面的 home-dotfiles 用 '("../dotfile") 是同一个写法，不写死 /home/用户名；
+    ;; local-file 会在 reconfigure 时把图片复制进 store，所以运行时不依赖
+    ;; home-dotfiles 生成的 ~/Pictures/wp.jpg 符号链接。
     ;; 和 home-waybar 一样，shepherd 服务 requirement 是 (graphical-session)，
     ;; 所以要跟上面的 home-graphical-session 成对出现。
     ;; 换壁纸：替换仓库里那个文件（或改下面的路径）后 reconfigure。
     (service home-awww-service-type
              (awww-configuration
-              (wallpaper "/home/liz/Pictures/wp.jpg")))
+              (wallpaper (local-file "../dotfile/Pictures/wp.jpg"))))
 
     ;; ── 输入法 fcitx5（同样来自 rosenthal channel）────────────────────
     ;; requirement 是 (dbus graphical-session)：dbus 来自 home-dbus，图形会话
