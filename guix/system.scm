@@ -43,6 +43,15 @@
 (define %boot-label "GX_BOOT")
 (define %root-label "GX_ROOT")
 
+;; ── 用户相关的信息只在这里维护 ─────────────────────────────────────────
+;; 用户名 / 家目录 / 主组 / 附加组。"cgroup" 是 rootless podman 必需的：
+;; rootless-podman 服务会把 /sys/fs/cgroup 的属主设为 root:cgroup。
+(define %user-name "liz")
+(define %user-home (string-append "/home/" %user-name))
+(define %user-group "users")
+(define %user-supplementary-groups
+  '("wheel" "netdev" "audio" "video" "input" "clash-verge" "cgroup"))
+
 (define (uuid-by-label label type)
   "在磁盘上找文件系统标签为 LABEL 的分区，返回它带类型 TYPE 的 UUID 对象；
 找不到、或者类型不符（DCE UUID 16 字节、FAT UUID 4 字节）就直接报错。"
@@ -75,13 +84,12 @@
  (users
   (cons
    (user-account
-    (name "liz")
-    (comment "liz")
+    (name %user-name)
+    (comment %user-name)
     (shell (file-append fish "/bin/fish"))
-    (group "users")
-    (home-directory "/home/liz")
-   (supplementary-groups '("wheel" "netdev" "audio" "video"
-                            "input" "clash-verge")))
+    (group %user-group)
+    (home-directory %user-home)
+    (supplementary-groups %user-supplementary-groups))
    %base-user-accounts))
 
  ;; font-lxgw-wenkai（霞鹜文楷）：装进【系统】profile 才能被登录管理器看到。
@@ -118,6 +126,20 @@
     (service bluetooth-service-type)
     (service iwd-service-type)
     (service dhcpcd-service-type)
+
+    ;; ── Podman（rootless，来自 (gnu services containers)）─────────────
+    ;; rootless-podman-service-type 会：把 podman 装进系统 profile；写
+    ;; /etc/containers/{registries,storage,policy}.conf；给 %user-name 分配
+    ;; subuid/subgid；把 /sys/fs/cgroup 属主设为 root:cgroup（见上面用户的
+    ;; cgroup 组）；并放开 cgroup v2 的 cpu/cpuset/io/memory/pids 控制器。
+    ;; podman 6.x 的 netavark/aardvark-dns/crun/conmon/passt 已由 podman 包
+    ;; 的 PATH 包装提供；按 Guix 手册，iptables-service-type 也是 podman 自己
+    ;; 配置网络所必需的。改完要重新登录（组变更才生效）。
+    (service iptables-service-type)
+    (service rootless-podman-service-type
+             (rootless-podman-configuration
+              (subuids (list (subid-range (name %user-name))))
+              (subgids (list (subid-range (name %user-name))))))
     (service clash-verge-service-type
                   (clash-verge-configuration
                    (install-gui? #t)
