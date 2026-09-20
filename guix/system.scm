@@ -19,6 +19,7 @@
  (ch0r0ng services networking)
  (ch0r0ng services clash-verge)
  (ch0r0ng packages sddm-astronaut-theme)  ;本地 channel 里的 SDDM 主题
+ (ch0r0ng packages wm)                    ;niri-shm-sharing（带 SHM 采集回退的 niri）
  (gnu system accounts)
  (gnu services base)               ;%default-authorized-guix-keys
  (gnu build file-systems)          ;find-partition-by-label、read-partition-uuid
@@ -96,7 +97,14 @@
  ;; SDDM 的 greeter 以 XDG_DATA_DIRS=/run/current-system/profile/share 启动，
  ;; fontconfig 会扫 $XDG_DATA_DIRS/*/fonts；系统 profile 里没有中文字体时只能
  ;; 退回 fontconfig 自带的 DejaVu，中文就显示成方块。
- (packages (cons* niri git font-lxgw-wenkai
+ ;; niri-git = 直接跟 niri main 编译（见 ch0r0ng/packages/wm.scm）。
+ ;; SHM 采集回退（上游 PR #1791）已合并进主线但还没有 release（最新 release 仍是
+ ;; 26.04），所以 Guix 里的 niri 还没有它。厂商腾讯会议请求 PipeWire 采集流时不指定
+ ;; VideoModifier，而 PipeWire 的约定是"没有 VideoModifier ⇒ 只能用共享内存缓冲"：
+ ;; 原版 niri 只 offer DMA-BUF，协商直接失败；强行走线性 dmabuf 又会在 Intel Gen12 上
+ ;; 静默出黑帧（niri issue #4123）。main 会在这种情况下 offer MemFd，共享屏幕才出画面。
+ ;; 包名/bin/niri/niri.desktop 与 niri 一致，登录菜单里就是它。
+ (packages (cons* niri-git git font-lxgw-wenkai
                   sddm-astronaut-theme   ;SDDM 主题（Qt6，10 套预设）
                   qtmultimedia           ;必需：Main.qml 顶部无条件 import QtMultimedia
                   %base-packages))

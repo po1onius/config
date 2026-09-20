@@ -23,6 +23,24 @@
   (specifications->packages
    '(;; Editing, repositories, and terminal sessions.
      "git" "neovim" "openssh" "tmux"
+     ;; 终端模拟器 ghostty：来自 ch0r0ng channel，见 ch0r0ng/packages/ghostty.scm
+     "ghostty"
+     ;; 腾讯 QQ / 腾讯会议：同样来自 ch0r0ng channel 的官方 deb 二进制包。
+     ;; wemeet 已经把 Wayland 投屏 hook（wemeet-wayland-screenshare）作为依赖
+     ;; 打进去了，wrapper 会在 Wayland 会话里自动 LD_PRELOAD，不需要额外写包名。
+     "qq" "wemeet"
+     ;; 屏幕共享 / 文件选择等要靠 portal。niri 的 share/xdg-desktop-portal/
+     ;; niri-portals.conf 里 default=gnome;gtk;，所以后端要装 gnome 那个
+     ;; （gtk 那个负责 Access/Notification）。投屏还需要 pipewire（见下面
+     ;; home-pipewire 服务）和 D-Bus 会话（home-dbus 服务）。
+     "xdg-desktop-portal" "xdg-desktop-portal-gnome" "xdg-desktop-portal-gtk"
+     ;; XWayland：niri 需要 xwayland-satellite 才有 X11 支持。niri 启动时会自己
+     ;; 测试并接入（在 PATH 里找到就行，不用写 niri 配置），真正的进程是在第一个
+     ;; X11 客户端连上来时才 spawn；登录后 `echo $DISPLAY` 有值就说明接上了。
+     ;; 腾讯会议的 AV 引擎（xcast）在原生 Wayland 下拿不到 EGL display 会起不来
+     ;; （点快速会议就报 5021），有了 X11 display 之后用 wemeet-xwayland 就正常
+     ;; （厂商自己的 wemeetapp.sh 在 Wayland 下也是强制走 XWayland 的）。
+     "xwayland-satellite"
      ;; Interactive shell and prompt.
      "starship" "alacritty" "google-chrome-stable" "font-lxgw-wenkai" "font-apple-sf-mono" "font-awesome" "font-nerd-symbols" "rofi" "firefox"
      ;; 状态栏 waybar（home-waybar 服务默认也用这个包，装进来方便手动调试）
