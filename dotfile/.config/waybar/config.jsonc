@@ -2,9 +2,12 @@
 {
     // "layer": "top", // Waybar at top layer
     // "position": "bottom", // Waybar position (top|bottom|left|right)
-    "height": 30, // Waybar height (to be removed for auto height)
+    "height": 32, // Waybar height (to be removed for auto height)
     // "width": 1280, // Waybar width
     "spacing": 4, // Gaps between modules (4px)
+    "margin-top": 6, // floating bar: gap around the bar (see style.css)
+    "margin-left": 10,
+    "margin-right": 10,
     // Choose the order of the modules
     // 组成栏的模块。原来是 sway/* —— niri 会话里读不到 sway IPC，
     // 所以改用 niri 自己的模块（这份 waybar 已带 niri 后端）。
@@ -63,6 +66,7 @@
     "tray": {
         // "icon-size": 21,
         "spacing": 10,
+        "icons": { "Fcitx": "fcitx" },
         // "icons": {
         //   "blueman": "bluetooth",
         //   "TelegramDesktop": "$HOME/.local/share/icons/hicolor/16x16/apps/telegram.png"
@@ -82,7 +86,8 @@
     },
     "temperature": {
         // "thermal-zone": 2,
-        "hwmon-path": "/sys/class/hwmon/hwmon5/temp1_input",
+        "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
+        "input-filename": "temp1_input",
         "critical-threshold": 80,
         // "format-critical": "{temperatureC}°C {icon}",
         "format": "{temperatureC}°C {icon}",
@@ -114,6 +119,6 @@
             "car": "",
             "default": ["", "", ""]
         },
-        "on-click": "pavucontrol"
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
     }
 }

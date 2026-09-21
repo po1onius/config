@@ -1,241 +1,197 @@
+/* niri + waybar —— 悬浮玻璃药丸风格（Waybar v0.15）
+ *
+ * 设计要点：
+ *   1. 栏本身悬浮：圆角 + 半透明 + 1px 描边（留白由 config.jsonc 的
+ *      margin-top / margin-left / margin-right 控制）。
+ *   2. 每个模块是一颗"药丸"（pill），hover 时略微提亮。
+ *   3. 强调色跟 ~/config/dotfile/.config/niri/config.kdl 里的
+ *      focus-ring active-color (#7fc8ff) 对齐，整体配色：深灰蓝底 + 冷蓝点缀。
+ *
+ * 说明：这个 waybar 构建没有编译模糊协议支持（waybar 二进制里既没有
+ * ext_background_effect_v1 也没有 org_kde_kwin_blur），所以用的是半透明
+ * 而不是真模糊。niri 侧本身是实现了 org_kde_kwin_blur 的。
+ *
+ * 选择器同时写了 #workspaces 和 #niri-workspaces 两种：waybar 对
+ * sway/workspaces 用的是 #workspaces，niri 模块大概率一样；匹配不到的
+ * 选择器在 GTK CSS 里不会报错，所以两边都写最保险。
+ */
+
 * {
-    /* `otf-font-awesome` is required to be installed for icons */
-    font-family: "FontAwesome", "Symbols Nerd Font", "Symbols Nerd Font Mono", "LXGW WenKai", sans-serif;
+    font-family: "Symbols Nerd Font Mono", "LXGW WenKai Mono", "SF Mono", "DejaVu Sans Mono", monospace;
     font-size: 13px;
+    font-weight: 500;
+    min-height: 0;
+    border: none;
+    border-radius: 0;
 }
 
 window#waybar {
-    background-color: rgba(43, 48, 59, 0.5);
-    border-bottom: 3px solid rgba(100, 114, 125, 0.5);
-    color: #ffffff;
-    transition-property: background-color;
-    transition-duration: .5s;
+    background-color: rgba(16, 18, 24, 0.74);
+    color: #e6e9ef;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
+    transition: background-color 200ms ease;
 }
 
 window#waybar.hidden {
     opacity: 0.2;
 }
 
-/*
-window#waybar.empty {
-    background-color: transparent;
-}
-window#waybar.solo {
-    background-color: #FFFFFF;
-}
-*/
-
-window#waybar.termite {
-    background-color: #3F3F3F;
-}
-
-window#waybar.chromium {
-    background-color: #000000;
-    border: none;
-}
-
-button {
-    /* Use box-shadow instead of border so the text isn't offset */
-    box-shadow: inset 0 -3px transparent;
-    /* Avoid rounded borders under each button name */
-    border: none;
-    border-radius: 0;
-}
-
-/* https://github.com/Alexays/Waybar/wiki/FAQ#the-workspace-buttons-have-a-strange-hover-effect */
-button:hover {
-    background: inherit;
-    box-shadow: inset 0 -3px #ffffff;
-}
-
-/* you can set a style on hover for any module like this */
-#pulseaudio:hover {
-    background-color: #a37800;
-}
-
-#workspaces button {
-    padding: 0 5px;
-    background-color: transparent;
-    color: #ffffff;
-}
-
-#workspaces button:hover {
-    background: rgba(0, 0, 0, 0.2);
-}
-
-#workspaces button.focused, #workspaces button.active {
-    background-color: #64727D;
-    box-shadow: inset 0 -3px #ffffff;
-}
-
-#workspaces button.urgent {
-    background-color: #eb4d4b;
-}
-
-#mode {
-    background-color: #64727D;
-    box-shadow: inset 0 -3px #ffffff;
-}
-
-#clock,
-#battery,
-#cpu,
-#memory,
-#disk,
-#temperature,
-#backlight,
-#network,
-#pulseaudio,
-#wireplumber,
-#custom-media,
-#tray,
-#mode,
-#idle_inhibitor,
-#scratchpad,
-#power-profiles-daemon,
-#mpd {
-    padding: 0 10px;
-    color: #ffffff;
-}
+/* ── 模块药丸 ─────────────────────────────────────────────────────── */
 
 #window,
-#workspaces {
-    margin: 0 4px;
+#niri-window,
+#idle_inhibitor,
+#pulseaudio,
+#network,
+#cpu,
+#memory,
+#temperature,
+#keyboard-state,
+#language,
+#niri-language,
+#clock,
+#tray {
+    padding: 0 10px;
+    margin: 4px 3px;
+    border-radius: 11px;
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: background-color 150ms ease, color 150ms ease;
 }
 
-/* If workspaces is the leftmost module, omit left margin */
-.modules-left > widget:first-child > #workspaces {
-    margin-left: 0;
+#window:hover,
+#niri-window:hover,
+#idle_inhibitor:hover,
+#pulseaudio:hover,
+#network:hover,
+#cpu:hover,
+#memory:hover,
+#temperature:hover,
+#keyboard-state:hover,
+#language:hover,
+#niri-language:hover,
+#clock:hover,
+#tray:hover {
+    background-color: rgba(255, 255, 255, 0.11);
 }
 
-/* If workspaces is the rightmost module, omit right margin */
-.modules-right > widget:last-child > #workspaces {
-    margin-right: 0;
+/* ── 工作区 ───────────────────────────────────────────────────────── */
+
+#workspaces,
+#niri-workspaces {
+    padding: 0 4px;
+    margin: 4px 3px;
+    border-radius: 11px;
+    background-color: rgba(255, 255, 255, 0.04);
 }
 
-#clock {
-    background-color: #64727D;
+#workspaces button,
+#niri-workspaces button {
+    padding: 0 8px;
+    margin: 3px 2px;
+    min-width: 16px;
+    border-radius: 9px;
+    background-color: transparent;
+    color: #8b93a7;
+    transition: all 150ms ease;
 }
 
-#battery {
-    background-color: #ffffff;
-    color: #000000;
+#workspaces button:hover,
+#niri-workspaces button:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #e6e9ef;
 }
 
-#battery.charging, #battery.plugged {
-    color: #ffffff;
-    background-color: #26A65B;
+#workspaces button.active,
+#niri-workspaces button.active {
+    background-color: #7fc8ff;
+    color: #10131a;
+    font-weight: 700;
 }
 
-@keyframes blink {
-    to {
-        background-color: #ffffff;
-        color: #000000;
-    }
+#workspaces button.urgent,
+#niri-workspaces button.urgent {
+    background-color: #ff6b6b;
+    color: #10131a;
 }
 
-/* Using steps() instead of linear as a timing function to limit cpu usage */
-#battery.critical:not(.charging) {
-    background-color: #f53c3c;
-    color: #ffffff;
-    animation-name: blink;
-    animation-duration: 0.5s;
-    animation-timing-function: steps(12);
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
+/* ── 中间窗口标题 ─────────────────────────────────────────────────── */
+
+#window,
+#niri-window {
+    color: #b9c2d0;
+    font-weight: 400;
 }
 
-#power-profiles-daemon {
-    padding-right: 15px;
+window#waybar.empty #window,
+window#waybar.empty #niri-window {
+    background-color: transparent;
 }
 
-#power-profiles-daemon.performance {
-    background-color: #f53c3c;
-    color: #ffffff;
+window#waybar.solo #window,
+window#waybar.solo #niri-window {
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
-#power-profiles-daemon.balanced {
-    background-color: #2980b9;
-    color: #ffffff;
+/* ── 各模块状态 ───────────────────────────────────────────────────── */
+
+#idle_inhibitor.activated {
+    color: #7fc8ff;
 }
 
-#power-profiles-daemon.power-saver {
-    background-color: #2ecc71;
-    color: #000000;
-}
-
-label:focus {
-    background-color: #000000;
-}
-
-#cpu {
-    background-color: #2ecc71;
-    color: #000000;
-}
-
-#memory {
-    background-color: #9b59b6;
-}
-
-#disk {
-    background-color: #964B00;
-}
-
-#backlight {
-    background-color: #90b1b1;
-}
-
-#network {
-    background-color: #2980b9;
-}
-
-#network.disconnected {
-    background-color: #f53c3c;
+#idle_inhibitor.deactivated {
+    color: #6b7280;
 }
 
 #pulseaudio {
-    background-color: #f1c40f;
-    color: #000000;
+    color: #9fd3ff;
 }
 
 #pulseaudio.muted {
-    background-color: #90b1b1;
-    color: #2a5c45;
+    color: #ff9e64;
 }
 
-#wireplumber {
-    background-color: #fff0f5;
-    color: #000000;
+#network {
+    color: #9fd3ff;
 }
 
-#wireplumber.muted {
-    background-color: #f53c3c;
+#network.disconnected {
+    color: #ff6b6b;
 }
 
-#custom-media {
-    background-color: #66cc99;
-    color: #2a5c45;
-    min-width: 100px;
-}
-
-#custom-media.custom-spotify {
-    background-color: #66cc99;
-}
-
-#custom-media.custom-vlc {
-    background-color: #ffa000;
+#network.linked {
+    color: #e6e9ef;
 }
 
 #temperature {
-    background-color: #f0932b;
+    color: #ffcc66;
+}
+
+#temperature.warning {
+    color: #ffcc66;
 }
 
 #temperature.critical {
-    background-color: #eb4d4b;
+    color: #ff6b6b;
 }
 
+#keyboard-state > label {
+    margin: 0 2px;
+}
+
+#keyboard-state > label.locked {
+    color: #7fc8ff;
+}
+
+#clock {
+    color: #e6e9ef;
+    font-weight: 600;
+}
+
+/* ── 托盘与提示框 ─────────────────────────────────────────────────── */
+
 #tray {
-    background-color: #2980b9;
+    padding: 0 8px;
 }
 
 #tray > .passive {
@@ -244,84 +200,20 @@ label:focus {
 
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
-    background-color: #eb4d4b;
+    background-color: rgba(255, 107, 107, 0.25);
 }
 
-#idle_inhibitor {
-    background-color: #2d3436;
+#tray menu {
+    background-color: rgba(16, 18, 24, 0.96);
 }
 
-#idle_inhibitor.activated {
-    background-color: #ecf0f1;
-    color: #2d3436;
+tooltip {
+    background-color: rgba(16, 18, 24, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
 }
 
-#mpd {
-    background-color: #66cc99;
-    color: #2a5c45;
-}
-
-#mpd.disconnected {
-    background-color: #f53c3c;
-}
-
-#mpd.stopped {
-    background-color: #90b1b1;
-}
-
-#mpd.paused {
-    background-color: #51a37a;
-}
-
-#language {
-    background: #00b093;
-    color: #740864;
-    padding: 0 5px;
-    margin: 0 5px;
-    min-width: 16px;
-}
-
-#keyboard-state {
-    background: #97e1ad;
-    color: #000000;
-    padding: 0 0px;
-    margin: 0 5px;
-    min-width: 16px;
-}
-
-#keyboard-state > label {
-    padding: 0 5px;
-}
-
-#keyboard-state > label.locked {
-    background: rgba(0, 0, 0, 0.2);
-}
-
-#scratchpad {
-    background: rgba(0, 0, 0, 0.2);
-}
-
-#scratchpad.empty {
-	background-color: transparent;
-}
-
-#privacy {
-    padding: 0;
-}
-
-#privacy-item {
-    padding: 0 5px;
-    color: white;
-}
-
-#privacy-item.screenshare {
-    background-color: #cf5700;
-}
-
-#privacy-item.audio-in {
-    background-color: #1ca000;
-}
-
-#privacy-item.audio-out {
-    background-color: #0069d4;
+tooltip label {
+    color: #e6e9ef;
+    padding: 4px 6px;
 }
