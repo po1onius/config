@@ -183,7 +183,7 @@ layout {
         // The settings are the same as for the focus ring.
         // If you enable the border, you probably want to disable the focus ring.
 
-        width 4
+        width 2
         active-color "#ffc87f"
         inactive-color "#505050"
 
@@ -313,6 +313,14 @@ blur {
 
 prefer-no-csd
 
+// 全局窗口圆角（取自 niri 官方默认配置里的示例）：
+// geometry-corner-radius 是几何圆角半径，clip-to-geometry true 才是真正把
+// 窗口内容按圆角裁剪；两者一起才是完整的"窗口圆角"。
+window-rule {
+    geometry-corner-radius 12
+    clip-to-geometry true
+}
+
 binds {
     // Keys consist of modifiers separated by + signs, followed by an XKB key name
     // in the end. To find an XKB name for a particular key, you may use a program
@@ -330,7 +338,8 @@ binds {
 
     // Suggested binds for running programs: terminal, app launcher, screen locker.
     Mod+Return { spawn "alacritty"; }
-    Mod+D { spawn "rofi" "-show" "drun"; }
+    Mod+D hotkey-overlay-title="Run an Application" { spawn "fuzzel"; }
+    Mod+Shift+D { spawn "rofi" "-show" "drun"; }
     // Super+Alt+L { spawn "swaylock"; }
 
     // You can also use a shell. Do this if you need pipes, multiple commands, etc.

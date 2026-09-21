@@ -55,6 +55,8 @@
      ;; 图标主题：hicolor 提供 index.theme（缺它 GTK 会认为 hicolor 主题不存在，
      ;; 于是所有主题图标名都找不到）；adwaita 提供 input-keyboard-symbolic 这类符号图标。
      "hicolor-icon-theme" "adwaita-icon-theme"
+     ;; 应用启动器 fuzzel（niri 上游默认就用它；rofi 保留作 fallback）
+     "fuzzel"
      ;; Codex from the configured channel, including its runtime helpers.
      "bubblewrap" "codex-bin"
      ;; Searching, inspecting files, and working with APIs.
