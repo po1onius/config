@@ -288,6 +288,7 @@ window-rule {
 window-rule {
     match app-id="QQ"
     match app-id="wemeetapp"
+    match app-id="clash-verge"
     open-floating true
 }
 

@@ -63,6 +63,10 @@
      "ripgrep" "fd" "jq" "curl" "file" "tree"
      ;; Python project management, JavaScript runtime, and shell checks.
      "uv" "node" "shellcheck"
+     ;; Python：uv 自己下载的预编译 CPython 在 Guix 上用不了（二进制硬编码
+     ;; /lib64/ld-linux-x86-64.so.2，Guix System 不是 FHS），所以直接给 Guix 的
+     ;; Python（默认 3.12）；python-wrapper 额外提供 python/pip 别名。
+     "python" "python-wrapper"
      ;; C/C++ builds and native Python/Node.js dependencies.
      "gcc-toolchain@14" "make" "pkg-config" "cmake" "ninja"
      ;; Archive formats not already provided by the base system.
