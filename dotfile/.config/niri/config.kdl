@@ -300,8 +300,13 @@ window-rule {
 
 
 window-rule {
-    opacity 0.85
+    opacity 0.9
     draw-border-with-background false
+}
+
+window-rule {
+    match app-id="Firefox"
+    opacity 1.0
 }
 
 blur {
