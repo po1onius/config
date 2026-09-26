@@ -18,9 +18,12 @@
               #:select (home-awww-service-type
                         awww-configuration))
              ((rosenthal services desktop)
-              #:select (home-waybar-service-type
-                        home-fcitx5-service-type
-                        home-fcitx5-configuration)))
+              #:select (home-fcitx5-service-type
+                        home-fcitx5-configuration))
+             ;; 本频道：quickshell（自写状态栏，取代 waybar）home 服务
+             ((ch0r0ng services quickshell)
+              #:select (home-quickshell-service-type
+                        quickshell-configuration)))
 
 (home-environment
  (packages
@@ -47,7 +50,8 @@
      "xwayland-satellite"
      ;; Interactive shell and prompt.
      "starship" "alacritty" "google-chrome-stable" "font-lxgw-wenkai" "font-apple-sf-mono" "font-awesome" "font-nerd-symbols" "rofi" "firefox"
-     ;; 状态栏 waybar（home-waybar 服务默认也用这个包，装进来方便手动调试）
+     ;; 旧状态栏 waybar：服务已停用（改用下面的 quickshell bar），包留着方便
+     ;; 临时手动 `waybar` 跑起来做对比
      "waybar"
      ;; 壁纸 daemon awww（swww 改名后的版本）；服务在 services 里，
      ;; 装进 profile 是为了方便 awww img / awww query 手动换图调试
@@ -106,15 +110,30 @@
  
     (service home-dbus-service-type)
 
-    ;; ── 状态栏 waybar（来自 rosenthal channel）─────────────────────────
-    ;; home-waybar 的 shepherd 服务 requirement 是 (graphical-session)，而这个
-    ;; provision 由 home-graphical-session 提供：它会等着 niri 的 Wayland
-    ;; socket 出现（默认最多 10 秒，我们这里会话里 shepherd 比 socket 早约 1 秒
-    ;; 启动，够用），所以这两个服务必须成对出现，否则 waybar 不会启动。
-    ;; waybar 的配置/样式默认取包自带的 etc/xdg/waybar（在 XDG_CONFIG_DIRS
-    ;; 里）；想自定义就写 ~/.config/waybar/{config.jsonc,style.css}。
-    (service home-graphical-session-service-type)
-    (service home-waybar-service-type)
+    ;; ── 图形会话探测（graphical-session / wayland-display）────────────
+    ;; 这个服务等着 niri 的 Wayland socket 出现（默认最多 10 秒，会话里
+    ;; shepherd 比 socket 早约 1 秒启动，够用）。下面所有 require
+    ;; (graphical-session) 的服务（quickshell / fcitx5 / awww）都依赖它，
+    ;; 必须成对出现。
+    ;; wayland? 必须显式给 #t：home-graphical-session 只有在
+    ;; (or wayland? x11?) 为真时才 provision `graphical-session` 和
+    ;; `wayland-display`。以前是靠 home-waybar 的 extend 声明 'wayland 自动
+    ;; 打开的；现在 waybar 已停用，不写这行的话 fcitx5 / awww / quickshell
+    ;; （都 require graphical-session）会在构建期报错「没有任何服务提供该服务」。
+    (service home-graphical-session-service-type
+             (home-graphical-session-configuration (wayland? #t)))
+    ;; 旧状态栏 waybar 由下面的 quickshell bar 取代。
+    ;; (service home-waybar-service-type)
+
+    ;; ── 状态栏 quickshell（自写 bar，取代 waybar）─────────────────────
+    ;; 壳配置在 ~/config/guix/quickshell/（单文件 shell.qml）：niri 工作区+
+    ;; 标题、iw 网络、PipeWire 音量、托盘、时钟。这里用 local-file 递归复制
+    ;; 进 store，服务以 `qs -p <store 路径>` 启动，并自动解析 NIRI_SOCKET。
+    ;; requirement 是 (dbus graphical-session)；pipewire 没起来时音量那块
+    ;; 显示 no audio，不会崩。
+    (service home-quickshell-service-type
+             (quickshell-configuration
+              (config (local-file "quickshell" #:recursive? #t))))
     ;; ── 壁纸 awww ────────────────────────────────────────────────
     ;; 图片放在 dotfile 仓库里：~/config/dotfile/Pictures/wp.jpg
     ;; 这里用 local-file + 相对路径（相对本文件所在目录，即 ~/config/guix/），
