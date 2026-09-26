@@ -51,7 +51,7 @@
 (define %user-home (string-append "/home/" %user-name))
 (define %user-group "users")
 (define %user-supplementary-groups
-  '("wheel" "netdev" "audio" "video" "input" "clash-verge" "cgroup"))
+  '("wheel" "netdev" "audio" "video" "input" "clash-verge" "cgroup" "kvm"))
 
 (define (uuid-by-label label type)
   "在磁盘上找文件系统标签为 LABEL 的分区，返回它带类型 TYPE 的 UUID 对象；
