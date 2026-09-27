@@ -48,8 +48,6 @@
      ;; （点快速会议就报 5021），有了 X11 display 之后用 wemeet-xwayland 就正常
      ;; （厂商自己的 wemeetapp.sh 在 Wayland 下也是强制走 XWayland 的）。
      "xwayland-satellite"
-     ;; Interactive shell and prompt.
-     "starship" "alacritty" "google-chrome-stable" "font-lxgw-wenkai" "font-apple-sf-mono" "font-awesome" "font-nerd-symbols" "rofi" "firefox"
      ;; 旧状态栏 waybar：服务已停用（改用下面的 quickshell bar），包留着方便
      ;; 临时手动 `waybar` 跑起来做对比
      "waybar"
@@ -81,6 +79,8 @@
      ;; 输入法相关的包不再手写：fcitx5 / fcitx5-gtk / fcitx5-qt / fcitx5-configtool
      ;; 由 home-fcitx5-service-type 自动加进 profile；中文引擎与主题通过它的
      ;; input-method-editors / themes 字段给出（见下面 services）。
+     
+     "starship" "alacritty" "google-chrome-stable" "font-lxgw-wenkai" "font-apple-sf-mono" "font-awesome" "font-nerd-symbols" "rofi" "firefox" "podman-compose"
  )))
  (services
   (list 
