@@ -76,6 +76,9 @@
      ;; Hardware video decoding: the VA-API backend for the Intel iGPU
      ;; (Mesa does NOT ship an Intel VA driver), plus vainfo to check it.
      "intel-media-driver" "libva-utils"
+     ;; 状态栏的系统信息（CPU/内存/温度/网速/磁盘/进程）靠 dgop 取数：它是
+     ;; 官方 Guix 包（gnu/packages/monitoring.scm，0.1.11），DMS 也是用它。
+     "dgop"
      ;; 输入法相关的包不再手写：fcitx5 / fcitx5-gtk / fcitx5-qt / fcitx5-configtool
      ;; 由 home-fcitx5-service-type 自动加进 profile；中文引擎与主题通过它的
      ;; input-method-editors / themes 字段给出（见下面 services）。
