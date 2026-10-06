@@ -39,6 +39,61 @@ ShellRoot {
     readonly property color danger: "#ff6b6b"
     readonly property string uiFont: "LXGW WenKai Mono"
 
+    // ── 栏上元素的固定宽度 ──────────────────────────────────────────────
+    // 数值一变长度就变会让整条 bar 抖动（CPU 3% → CPU 12%、↓2K → ↓1.2M），
+    // 所以每个元素都按「最坏情况」的文字量一次，宽度固定、文字居中。
+    // 用 TextMetrics 而不是写死像素：改字号/字体时宽度自动跟着变。
+    TextMetrics {
+        id: tmWs
+        font.family: root.uiFont
+        font.pixelSize: 13
+        font.bold: true
+        text: "88"
+    }
+
+    TextMetrics {
+        id: tmCpu
+        font.family: root.uiFont
+        font.pixelSize: 12
+        text: "CPU 100%"
+    }
+
+    TextMetrics {
+        id: tmMem
+        font.family: root.uiFont
+        font.pixelSize: 12
+        text: "MEM 100%"
+    }
+
+    TextMetrics {
+        id: tmTemp
+        font.family: root.uiFont
+        font.pixelSize: 12
+        text: "100℃"
+    }
+
+    TextMetrics {
+        id: tmNet
+        font.family: root.uiFont
+        font.pixelSize: 12
+        text: "↓99.9M ↑99.9M"
+    }
+
+    TextMetrics {
+        id: tmVol
+        font.family: root.uiFont
+        font.pixelSize: 13
+        text: "MUTE"
+    }
+
+    TextMetrics {
+        id: tmClock
+        font.family: root.uiFont
+        font.pixelSize: 13
+        font.bold: true
+        text: "00:00  周一"
+    }
+
     // ── niri 状态 ──────────────────────────────────────────────────────
     // 字段名取自 niri-ipc：workspace 有 id/idx/name/is_active/is_focused/
     // is_urgent；window 有 id/title/app_id/is_focused/workspace_id。
@@ -737,13 +792,13 @@ ShellRoot {
             right: true
         }
         margins {
-            top: 6
-            left: 10
-            right: 10
+            top: 2
+            left: 2
+            right: 2
         }
 
         implicitHeight: 34
-        exclusiveZone: 40          // 34 + 上边距 6，给窗口留出空间
+        exclusiveZone: 36          // 34 + 上边距 2，给窗口留出空间
         color: "transparent"
 
         WlrLayershell.layer: WlrLayer.Top
@@ -778,7 +833,7 @@ ShellRoot {
                             readonly property bool focused: modelData.is_active
                             readonly property bool hovered: wsMouse.containsMouse
 
-                            width: Math.max(22, wsLabel.implicitWidth + 14)
+                            width: tmWs.advanceWidth + 14
                             height: 24
                             radius: 9
                             color: focused
@@ -905,7 +960,7 @@ ShellRoot {
 
                     Rectangle {
                         id: cpuPill
-                        width: cpuLabel.implicitWidth + 16
+                        width: tmCpu.advanceWidth + 16
                         height: 24
                         radius: 9
                         color: (cpuMouse.containsMouse || root.sysPopupOpen)
@@ -935,7 +990,7 @@ ShellRoot {
 
                     Rectangle {
                         id: memPill
-                        width: memLabel.implicitWidth + 16
+                        width: tmMem.advanceWidth + 16
                         height: 24
                         radius: 9
                         color: (memMouse.containsMouse || root.sysPopupOpen)
@@ -965,7 +1020,7 @@ ShellRoot {
 
                     Rectangle {
                         id: tempPill
-                        width: tempLabel.implicitWidth + 16
+                        width: tmTemp.advanceWidth + 16
                         height: 24
                         radius: 9
                         color: (tempMouse.containsMouse || root.sysPopupOpen)
@@ -995,7 +1050,7 @@ ShellRoot {
 
                     Rectangle {
                         id: netRatePill
-                        width: netRateLabel.implicitWidth + 16
+                        width: tmNet.advanceWidth + 16
                         height: 24
                         radius: 9
                         color: (netRateMouse.containsMouse || root.sysPopupOpen)
@@ -1097,7 +1152,7 @@ ShellRoot {
                 Rectangle {
                     id: volPill
                     Layout.alignment: Qt.AlignVCenter
-                    Layout.preferredWidth: volLabel.implicitWidth + 18
+                    Layout.preferredWidth: tmVol.advanceWidth + 18
                     Layout.preferredHeight: 24
                     radius: 9
                     color: volMouse.containsMouse ? root.pillHover : root.pillIdle
@@ -1114,7 +1169,7 @@ ShellRoot {
                         color: root.muted ? root.danger : root.fg
                         text: {
                             if (!root.sinkReady)
-                                return "no audio"
+                                return "--"
                             if (root.muted)
                                 return "MUTE"
                             return root.volumePercent + "%"
@@ -1140,7 +1195,7 @@ ShellRoot {
                 // ── 右：时钟（hover 变亮）──
                 Rectangle {
                     Layout.alignment: Qt.AlignVCenter
-                    Layout.preferredWidth: clockText.implicitWidth + 20
+                    Layout.preferredWidth: tmClock.advanceWidth + 20
                     Layout.preferredHeight: 24
                     radius: 9
                     color: clockMouse.containsMouse ? root.pillHover : root.pillIdle

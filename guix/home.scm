@@ -103,7 +103,13 @@
        ;;(gnu/packages/video.scm 的 --with-drivers-path)，而 Intel 驱动不
        ;;在那儿，所以必须覆盖 LIBVA_DRIVERS_PATH 指到 home profile。
        ;;注意变量名带 S；guix home 不会自动展开 profile 的搜索路径。
-       ("LIBVA_DRIVER_NAME" . "iHD")))
+       ("LIBVA_DRIVER_NAME" . "iHD")
+
+       ;;qt 图标主题：不设这个时 Qt 只会查 hicolor 回退主题，于是「只有 Adwaita
+       ;;才提供」的符号图标（例如 fcitx5 在英文/键盘布局模式下发的
+       ;;input-keyboard-symbolic）在托盘里就显示不出来。qtbase 自带 gtk3 平台
+       ;;主题插件（libqgtk3.so），设上它 Qt 就会去读 GTK 的 icon-theme（Adwaita）。
+       ("QT_QPA_PLATFORMTHEME" . "gtk3")))
 
        ;;input method：XMODIFIERS / QT_IM_MODULE / GTK_IM_MODULE 由
        ;;home-fcitx5-service-type 自己设置（见下面 services），这里只留它不管的两项。
