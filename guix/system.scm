@@ -28,18 +28,44 @@
  )
 
 ;; 本机分区固定用这两个文件系统标签：
-;;   ROOT —— 根文件系统（ext4）
-;;   BOOT —— EFI 系统分区（FAT32）
+;;   GX_ROOT —— 根文件系统（btrfs，两个子卷：@ 给 /，@home 给 /home）
+;;   GX_BOOT —— EFI 系统分区（FAT32）
 ;; 这份配置不写死 UUID，也不依赖 /dev/nvme0n1pX 这样的设备名，而是在求值时
 ;; 自己去盘上找这两个标签、读出它们的 UUID。
 ;;
-;; 标签用 mkfs 打上即可，例如：
-;;   mkfs.ext4 -L ROOT /dev/xxx2
-;;   mkfs.fat -F 32 -n BOOT /dev/xxx1
+;; ── 全新安装时在 live 环境里要做的（需要 root；设备名按实际改）──────────
+;;   mkfs.fat -F 32 -n GX_BOOT /dev/nvme0n1p1
+;;   mkfs.btrfs -L GX_ROOT  /dev/nvme0n1p2
+;;
+;;   # 先挂顶层子卷（subvolid=5）建子卷
+;;   mount LABEL=GX_ROOT -o subvolid=5 /mnt
+;;   btrfs subvolume create /mnt/@
+;;   btrfs subvolume create /mnt/@home
+;;   # ★ 关键：GRUB 的 btrfs 驱动只读「默认子卷」，不设它开机会找不到
+;;   #   /gnu/store 里的内核（会掉进 rescue）。设成 @。
+;;   btrfs subvolume set-default \
+;;     "$(btrfs subvolume list /mnt | awk '$NF==\"@\"{print $2}')" /mnt
+;;   umount /mnt
+;;
+;;   # 按子卷挂回来（compress=zstd 顺带在这里体现，靠下面 file-systems 的 options 生效）
+;;   mount LABEL=GX_ROOT -o subvol=@,compress=zstd /mnt
+;;   mkdir /mnt/home && mount LABEL=GX_ROOT -o subvol=@home,compress=zstd /mnt/home
+;;   mkdir -p /mnt/boot/efi && mount LABEL=GX_BOOT /mnt/boot/efi
+;;
+;;   # 装系统：live 环境里先有本项目要的频道（nonguix / ch0r0ng …）
+;;   guix pull -C channels.scm
+;;   guix system init ~/config/guix/system.scm /mnt
+;;   reboot
+;;   # 首次进系统后：guix home reconfigure ~/config/guix/home.scm
 ;;
 ;; 注意：读超级块需要 root 权限，设备节点也必须已经存在（udev 就绪），
 ;; 所以请在正在运行的目标系统上以 root 求值，例如：
 ;;   sudo guix system reconfigure ~/config/guix/system.scm
+;;
+;; ⚠ 这份配置只能用在已完成 btrfs 转换/全新安装的系统上。在现在的 ext4 系统上
+;;   `guix system reconfigure` 会让 initrd 去挂 subvol=@ 而失败（旧系统起不来；
+;;   万幸 GRUB 菜单里还能选上一个 generation 回退）。想在旧系统上只做语法检查，
+;;   用 `sudo guix system build ~/config/guix/system.scm`（只构建、不切换）。
 
 (define %boot-label "GX_BOOT")
 (define %root-label "GX_ROOT")
@@ -107,6 +133,9 @@
  (packages (cons* niri-git git font-lxgw-wenkai
                   sddm-astronaut-theme   ;SDDM 主题（Qt6，10 套预设）
                   qtmultimedia           ;必需：Main.qml 顶部无条件 import QtMultimedia
+                  ;; btrfs 命令行工具（不在 %base-packages 里）。开机挂载靠内核，
+                  ;; 不需要它；它是给人用的：btrfs subvolume/snapshot/usage 等。
+                  btrfs-progs
                   %base-packages))
 
  (services
@@ -192,6 +221,14 @@
      (type "vfat"))
     (file-system
      (mount-point "/")
-     ;; 根文件系统：按固定标签 ROOT 找
-     (device (uuid-by-label %root-label 'ext4))
-     (type "ext4"))) %base-file-systems)))
+     ;; 根文件系统：按固定标签 ROOT 找，btrfs 的 @ 子卷
+     (device (uuid-by-label %root-label 'btrfs))
+     (type "btrfs")
+     ;; compress=zstd 已确认 GRUB 2.14 的 btrfs 驱动支持（能读 zstd 压缩的内核）
+     (options "subvol=@,compress=zstd"))
+    (file-system
+     (mount-point "/home")
+     ;; 同一个 btrfs 上的 @home 子卷，单独列出来便于日后单独快照/回滚
+     (device (uuid-by-label %root-label 'btrfs))
+     (type "btrfs")
+     (options "subvol=@home,compress=zstd"))) %base-file-systems)))
