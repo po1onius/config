@@ -35,7 +35,7 @@
      ;; 腾讯 QQ / 腾讯会议：同样来自 ch0r0ng channel 的官方 deb 二进制包。
      ;; wemeet 已经把 Wayland 投屏 hook（wemeet-wayland-screenshare）作为依赖
      ;; 打进去了，wrapper 会在 Wayland 会话里自动 LD_PRELOAD，不需要额外写包名。
-     "qq" "wemeet"
+     "qq" "wemeet" "feishu"
      ;; 屏幕共享 / 文件选择等要靠 portal。niri 的 share/xdg-desktop-portal/
      ;; niri-portals.conf 里 default=gnome;gtk;，所以后端要装 gnome 那个
      ;; （gtk 那个负责 Access/Notification）。投屏还需要 pipewire（见下面
