@@ -19,6 +19,7 @@
 
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Shapes
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
@@ -720,6 +721,47 @@ ShellRoot {
     // 否则下次点击会被当成「再关一次」而打不开。
     property bool audioPopupOpen: false
 
+    // 电源弹窗：沿用同一套开关模式（grabFocus 弹窗关闭时要靠 onClosed 同步回来）
+    property bool powerPopupOpen: false
+    property string powerPending: ""
+    property string powerError: ""
+
+    // 电源动作走 loginctl（elogind + polkit，本地活跃会话 allow_active=yes 免密）。
+    // 不用 PATH 上的 shutdown —— 那是 GNU Shepherd 的命令，要连系统 Shepherd 的
+    // socket（root 专属），所以必然要 sudo。
+    // 「休眠」用 suspend：真·hibernate 需要 swap，本机没有 swap。
+    function runPowerAction(action) {
+        root.powerPending = action
+        root.powerError = ""
+        powerAction.command = ["loginctl", action, "--no-ask-password"]
+        powerAction.running = true
+    }
+
+    Process {
+        id: powerAction
+        command: []
+        running: false
+
+        stderr: StdioCollector {
+            onStreamFinished: {
+                if (text.trim() !== "")
+                    root.powerError = text.trim()
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode === 0) {
+                root.powerPopupOpen = false
+                root.powerPending = ""
+            } else {
+                if (root.powerError === "")
+                    root.powerError = "loginctl " + root.powerPending
+                                    + " 退出码 " + exitCode
+                console.warn("quickshell-bar: 电源动作失败:", root.powerError)
+            }
+        }
+    }
+
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property var source: Pipewire.defaultAudioSource
 
@@ -1218,6 +1260,64 @@ ShellRoot {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
+                    }
+                }
+
+                // ── 右：电源（点击弹出 休眠 / 关机 / 重启）──
+                Rectangle {
+                    id: powerPill
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredWidth: 30
+                    Layout.preferredHeight: 24
+                    radius: 9
+                    color: (powerMouse.containsMouse || root.powerPopupOpen)
+                           ? root.pillHover : root.pillIdle
+
+                    Behavior on color {
+                        ColorAnimation { duration: 110 }
+                    }
+
+                    // 电源图标：圆环 + 顶端缺口 + 一条竖线，用 Shape 画，
+                    // 不去赌字体里有没有 ⏻
+                    Shape {
+                        anchors.centerIn: parent
+                        width: 13
+                        height: 13
+                        antialiasing: true
+
+                        ShapePath {
+                            strokeColor: root.fg
+                            strokeWidth: 1.5
+                            fillColor: "transparent"
+                            capStyle: ShapePath.RoundCap
+
+                            PathAngleArc {
+                                centerX: 6.5
+                                centerY: 7
+                                radiusX: 5
+                                radiusY: 5
+                                startAngle: -63
+                                sweepAngle: 306
+                            }
+
+                            PathMove {
+                                x: 6.5
+                                y: 0.5
+                            }
+
+                            PathLine {
+                                x: 6.5
+                                y: 5
+                            }
+                        }
+                    }
+
+                    MouseArea {
+                        id: powerMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.powerPopupOpen = !root.powerPopupOpen
                     }
                 }
             }
@@ -2224,6 +2324,91 @@ ShellRoot {
             var d = new Date()
             var wd = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][d.getDay()]
             clockText.text = Qt.formatDateTime(d, "HH:mm") + "  " + wd
+        }
+    }
+
+    // ── 电源弹窗 ────────────────────────────────────────────────────────
+    PopupWindow {
+        id: powerPopup
+
+        visible: root.powerPopupOpen
+        grabFocus: true
+        color: "transparent"
+        implicitWidth: 190
+        implicitHeight: powerColumn.implicitHeight + 20
+
+        anchor.item: powerPill
+        anchor.edges: Edges.Bottom | Edges.Right
+        anchor.gravity: Edges.Bottom | Edges.Right
+        anchor.margins.top: 8
+        anchor.adjustment: PopupAdjustment.Slide
+
+        onClosed: root.powerPopupOpen = false
+
+        Rectangle {
+            anchors.fill: parent
+            radius: 14
+            color: Qt.rgba(18 / 255, 20 / 255, 26 / 255, 0.97)
+            border.width: 1
+            border.color: Qt.rgba(1, 1, 1, 0.10)
+
+            ColumnLayout {
+                id: powerColumn
+                anchors.fill: parent
+                anchors.margins: 10
+                spacing: 2
+
+                Repeater {
+                    model: [
+                        { action: "suspend",  label: "休眠", color: root.fg },
+                        { action: "poweroff", label: "关机", color: root.danger },
+                        { action: "reboot",   label: "重启", color: root.accent }
+                    ]
+
+                    delegate: Rectangle {
+                        required property var modelData
+
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 34
+                        radius: 9
+                        color: rowMouse.containsMouse ? root.pillHover : "transparent"
+                        // 执行中把其它项压暗，避免连点
+                        opacity: root.powerPending !== ""
+                                 && root.powerPending !== modelData.action ? 0.45 : 1.0
+
+                        Text {
+                            anchors.left: parent.left
+                            anchors.leftMargin: 12
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: modelData.label
+                            color: modelData.color
+                            font.family: root.uiFont
+                            font.pixelSize: 13
+                            font.bold: true
+                        }
+
+                        MouseArea {
+                            id: rowMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.runPowerAction(modelData.action)
+                        }
+                    }
+                }
+
+                // 失败提示（比如 polkit 不肯授权时）
+                Text {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 2
+                    visible: root.powerError !== ""
+                    text: root.powerError
+                    wrapMode: Text.WordWrap
+                    color: root.danger
+                    font.family: root.uiFont
+                    font.pixelSize: 11
+                }
+            }
         }
     }
 }
