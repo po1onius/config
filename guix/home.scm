@@ -4,6 +4,7 @@
              (gnu home services shells)
              ((gnu packages shellutils) #:select (starship))
              (gnu home services)
+	     (gnu packages wm)
  (gnu home services dotfiles)      ;把 ~/config/dotfile 映射进 $HOME
  (gnu packages fcitx5)
  (gnu home services sound)
@@ -30,8 +31,6 @@
   (specifications->packages
    '(;; Editing, repositories, and terminal sessions.
      "git" "neovim" "openssh" "tmux"
-     ;; 终端模拟器 ghostty：来自 ch0r0ng channel，见 ch0r0ng/packages/ghostty.scm
-     "ghostty"
      ;; 腾讯 QQ / 腾讯会议：同样来自 ch0r0ng channel 的官方 deb 二进制包。
      ;; wemeet 已经把 Wayland 投屏 hook（wemeet-wayland-screenshare）作为依赖
      ;; 打进去了，wrapper 会在 Wayland 会话里自动 LD_PRELOAD，不需要额外写包名。
@@ -48,9 +47,6 @@
      ;; （点快速会议就报 5021），有了 X11 display 之后用 wemeet-xwayland 就正常
      ;; （厂商自己的 wemeetapp.sh 在 Wayland 下也是强制走 XWayland 的）。
      "xwayland-satellite"
-     ;; 旧状态栏 waybar：服务已停用（改用下面的 quickshell bar），包留着方便
-     ;; 临时手动 `waybar` 跑起来做对比
-     "waybar"
      ;; 壁纸 daemon awww（swww 改名后的版本）；服务在 services 里，
      ;; 装进 profile 是为了方便 awww img / awww query 手动换图调试
      "awww"
@@ -83,7 +79,7 @@
      ;; 由 home-fcitx5-service-type 自动加进 profile；中文引擎与主题通过它的
      ;; input-method-editors / themes 字段给出（见下面 services）。
      
-     "starship" "alacritty" "google-chrome-stable" "font-lxgw-wenkai" "font-apple-sf-mono" "font-awesome" "font-nerd-symbols" "rofi" "firefox" "podman-compose"
+     "starship" "alacritty" "font-lxgw-wenkai" "font-apple-sf-mono" "font-awesome" "font-nerd-symbols" "rofi" "firefox" "podman-compose"
  )))
  (services
   (list 
@@ -142,6 +138,7 @@
     ;; 显示 no audio，不会崩。
     (service home-quickshell-service-type
              (quickshell-configuration
+	       (quickshell quickshell)
               (config (local-file "quickshell" #:recursive? #t))))
     ;; ── 壁纸 awww ────────────────────────────────────────────────
     ;; 图片放在 dotfile 仓库里：~/config/dotfile/Pictures/wp.jpg
