@@ -369,6 +369,7 @@ ShellRoot {
     }
 
     function openWifiPopup() {
+        root.closeAllPopups("wifi")
         root.wifiPopupOpen = true
         root.pendingNetwork = null
         root.wifiPassword = ""
@@ -463,6 +464,7 @@ ShellRoot {
     }
 
     function openTrayMenu(item, x, y) {
+        root.closeAllPopups("tray")
         root.trayMenuStack = [{
             handle: item.menu,
             title: item.title ? item.title : item.id
@@ -725,6 +727,52 @@ ShellRoot {
     property bool powerPopupOpen: false
     property string powerPending: ""
     property string powerError: ""
+
+    // ── 弹窗互斥 ───────────────────────────────────────────────────────
+    // 五个弹窗（系统状态 / Wi-Fi / 托盘菜单 / 音量 / 电源）同一时刻只允许一个
+    // 可见。它们都是 grabFocus 的 PopupWindow，点另一个 bar 图标时旧弹窗未必
+    // 收到 closed —— 那次点击照样会落到新图标上，于是两个弹窗就叠在一起了。
+    // 所以「打开」一律先过 closeAllPopups()，不要再直接翻那几个 bool。
+    function popupProp(name) {
+        switch (name) {
+        case "sys":
+            return "sysPopupOpen"
+        case "wifi":
+            return "wifiPopupOpen"
+        case "audio":
+            return "audioPopupOpen"
+        case "power":
+            return "powerPopupOpen"
+        }
+        return ""
+    }
+
+    function closeAllPopups(except) {
+        if (except !== "sys" && root.sysPopupOpen)
+            root.sysPopupOpen = false
+        if (except !== "wifi" && root.wifiPopupOpen) {
+            root.wifiPopupOpen = false
+            root.pendingNetwork = null
+        }
+        if (except !== "audio" && root.audioPopupOpen)
+            root.audioPopupOpen = false
+        if (except !== "power" && root.powerPopupOpen)
+            root.powerPopupOpen = false
+        if (except !== "tray" && root.trayMenuOpen)
+            root.closeTrayMenu()
+    }
+
+    function togglePopup(name) {
+        var prop = root.popupProp(name)
+        if (prop === "")
+            return
+        if (root[prop]) {
+            root[prop] = false
+        } else {
+            root.closeAllPopups(name)
+            root[prop] = true
+        }
+    }
 
     // 电源动作走 loginctl（elogind + polkit，本地活跃会话 allow_active=yes 免密）。
     // 不用 PATH 上的 shutdown —— 那是 GNU Shepherd 的命令，要连系统 Shepherd 的
@@ -1026,7 +1074,7 @@ ShellRoot {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.sysPopupOpen = !root.sysPopupOpen
+                            onClicked: root.togglePopup("sys")
                         }
                     }
 
@@ -1056,7 +1104,7 @@ ShellRoot {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.sysPopupOpen = !root.sysPopupOpen
+                            onClicked: root.togglePopup("sys")
                         }
                     }
 
@@ -1086,7 +1134,7 @@ ShellRoot {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.sysPopupOpen = !root.sysPopupOpen
+                            onClicked: root.togglePopup("sys")
                         }
                     }
 
@@ -1116,7 +1164,7 @@ ShellRoot {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.sysPopupOpen = !root.sysPopupOpen
+                            onClicked: root.togglePopup("sys")
                         }
                     }
                 }
@@ -1228,7 +1276,7 @@ ShellRoot {
                             if (mouse.button === Qt.MiddleButton)
                                 root.toggleMute()
                             else
-                                root.audioPopupOpen = !root.audioPopupOpen
+                                root.togglePopup("audio")
                         }
                         onWheel: wheel => root.bumpVolume((wheel.angleDelta.y / 120) * 0.05)
                     }
@@ -1317,7 +1365,7 @@ ShellRoot {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: root.powerPopupOpen = !root.powerPopupOpen
+                        onClicked: root.togglePopup("power")
                     }
                 }
             }
