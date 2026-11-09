@@ -56,27 +56,27 @@ ShellRoot {
         id: tmCpu
         font.family: root.uiFont
         font.pixelSize: 12
-        text: "CPU 100%"
+        text: "🧠 100%"
     }
 
     TextMetrics {
         id: tmMem
         font.family: root.uiFont
         font.pixelSize: 12
-        text: "MEM 100%"
+        text: "🧮 100%"
     }
 
     TextMetrics {
         id: tmTemp
         font.family: root.uiFont
         font.pixelSize: 12
-        text: "100℃"
+        text: "🌡️ 100℃"
     }
     TextMetrics {
         id: tmDisk
         font.family: root.uiFont
         font.pixelSize: 12
-        text: "DISK 100%"
+        text: "💾 100%"
     }
 
     TextMetrics {
@@ -1128,7 +1128,7 @@ ShellRoot {
                         Text {
                             id: cpuLabel
                             anchors.centerIn: parent
-                            text: root.cpuUsage >= 0 ? "CPU " + root.cpuUsage + "%" : "CPU --"
+                            text: root.cpuUsage >= 0 ? "🧠 " + root.cpuUsage + "%" : "🧠 --"
                             color: root.levelColor(root.cpuUsage, 60, 80)
                             font.family: root.uiFont
                             font.pixelSize: 12
@@ -1159,7 +1159,7 @@ ShellRoot {
                         Text {
                             id: memLabel
                             anchors.centerIn: parent
-                            text: root.sysMemory ? "MEM " + root.memPercent + "%" : "MEM --"
+                            text: root.sysMemory ? "🧮 " + root.memPercent + "%" : "🧮 --"
                             color: root.levelColor(root.memPercent, 70, 90)
                             font.family: root.uiFont
                             font.pixelSize: 12
@@ -1190,7 +1190,7 @@ ShellRoot {
                         Text {
                             id: tempLabel
                             anchors.centerIn: parent
-                            text: root.cpuTemp > 0 ? root.cpuTemp + "℃" : "--℃"
+                            text: root.cpuTemp > 0 ? "🌡️ " + root.cpuTemp + "℃" : "🌡️ --℃"
                             color: root.levelColor(root.cpuTemp, 69, 85)
                             font.family: root.uiFont
                             font.pixelSize: 12
@@ -1222,7 +1222,7 @@ ShellRoot {
                             id: diskLabel
                             anchors.centerIn: parent
                             text: root.diskPercent >= 0
-                                  ? "DISK " + root.diskPercent + "%" : "DISK --"
+                                  ? "💾 " + root.diskPercent + "%" : "💾 --"
                             color: root.levelColor(root.diskPercent, 80, 90)
                             font.family: root.uiFont
                             font.pixelSize: 12

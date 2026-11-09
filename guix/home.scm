@@ -79,7 +79,7 @@
      ;; 由 home-fcitx5-service-type 自动加进 profile；中文引擎与主题通过它的
      ;; input-method-editors / themes 字段给出（见下面 services）。
      
-     "starship" "alacritty" "font-lxgw-wenkai" "font-apple-sf-mono" "font-awesome" "font-nerd-symbols" "rofi" "firefox" "podman-compose"
+     "starship" "alacritty" "font-lxgw-wenkai" "font-apple-sf-mono" "font-awesome" "font-nerd-symbols" "font-google-noto-emoji" "rofi" "firefox" "podman-compose"
  )))
  (services
   (list 
