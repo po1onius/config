@@ -72,6 +72,12 @@ ShellRoot {
         font.pixelSize: 12
         text: "100℃"
     }
+    TextMetrics {
+        id: tmDisk
+        font.family: root.uiFont
+        font.pixelSize: 12
+        text: "DISK 100%"
+    }
 
     TextMetrics {
         id: tmNet
@@ -530,6 +536,8 @@ ShellRoot {
     property string sysNetCursor: ""
     property string sysDiskCursor: ""
     property bool sysPopupOpen: false
+    property string sysSection: "cpu"     // cpu / mem / temp / disk / net
+    property var sysAnchorItem: null      // 详情弹窗锚在哪个胶囊下面
     property bool sysReady: false
     property bool sysAvailable: false      // dgop 是否在 PATH 里
 
@@ -590,12 +598,68 @@ ShellRoot {
         return (kb / 1048576).toFixed(1)
     }
 
+    // ── 胶囊 → 详情 ────────────────────────────────────────────────────
+    // 同一个胶囊再点一次 = 收起；点另一个 = 换分区（顺带换锚点）。
+    function openSysDetail(section, anchor) {
+        if (root.sysPopupOpen && root.sysSection === section) {
+            root.sysPopupOpen = false
+            return
+        }
+        root.closeAllPopups("sys")
+        root.sysSection = section
+        root.sysAnchorItem = anchor
+        root.sysPopupOpen = true
+        // 打开后马上补一次带 hardware / disk-rate / processes 的采样，别等 3 秒
+        root.refreshSysInfo()
+    }
+
+    readonly property string sysSectionTitle: {
+        switch (root.sysSection) {
+        case "mem":
+            return "内存"
+        case "temp":
+            return "温度"
+        case "disk":
+            return "磁盘"
+        case "net":
+            return "网络"
+        }
+        return "CPU"
+    }
+
+    readonly property string tempLevelText: {
+        if (root.cpuTemp < 0)
+            return "读不到温度传感器"
+        if (root.cpuTemp >= 85)
+            return "偏热，风扇该转起来了"
+        if (root.cpuTemp >= 69)
+            return "有点温热"
+        return "温度正常"
+    }
+
+    // 栏上的磁盘用量取根分区（没有就退到第一个挂载点）
+    readonly property var rootMount: {
+        for (var i = 0; i < root.sysMounts.length; i++)
+            if (root.sysMounts[i].mount === "/")
+                return root.sysMounts[i]
+        return root.sysMounts.length > 0 ? root.sysMounts[0] : null
+    }
+    // dgop 的 percent 是 "3%" 这种字符串
+    readonly property int diskPercent: root.rootMount && root.rootMount.percent
+                                       ? parseInt(root.rootMount.percent) : -1
+
+    // 网络详情里跳过 loopback
+    readonly property var netIfaces: root.sysNet.filter(function (n) {
+        return n.interface !== "lo"
+    })
+
     function refreshSysInfo() {
         if (!root.sysAvailable || sysInfo.running)
             return
-        var mods = "cpu,memory,net-rate"
+        // diskmounts 常驻：栏上那个磁盘胶囊要一直有数
+        var mods = "cpu,memory,net-rate,diskmounts"
         if (root.sysPopupOpen)
-            mods += ",hardware,diskmounts,disk-rate,processes,system"
+            mods += ",hardware,disk-rate,processes,system"
         var cmd = ["dgop", "meta", "--json", "--modules", mods, "--limit", "8", "--sort", "cpu"]
         // cursor 是"上次采样"的凭据，传回去才能算出这段时间的差分
         if (root.sysCpuCursor.length > 0)
@@ -1053,7 +1117,8 @@ ShellRoot {
                         width: tmCpu.advanceWidth + 16
                         height: 24
                         radius: 9
-                        color: (cpuMouse.containsMouse || root.sysPopupOpen)
+                        color: (cpuMouse.containsMouse
+                                || (root.sysPopupOpen && root.sysSection === "cpu"))
                                ? root.pillHover : root.pillIdle
 
                         Behavior on color {
@@ -1074,7 +1139,7 @@ ShellRoot {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.togglePopup("sys")
+                            onClicked: root.openSysDetail("cpu", cpuPill)
                         }
                     }
 
@@ -1083,7 +1148,8 @@ ShellRoot {
                         width: tmMem.advanceWidth + 16
                         height: 24
                         radius: 9
-                        color: (memMouse.containsMouse || root.sysPopupOpen)
+                        color: (memMouse.containsMouse
+                                || (root.sysPopupOpen && root.sysSection === "mem"))
                                ? root.pillHover : root.pillIdle
 
                         Behavior on color {
@@ -1104,7 +1170,7 @@ ShellRoot {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.togglePopup("sys")
+                            onClicked: root.openSysDetail("mem", memPill)
                         }
                     }
 
@@ -1113,7 +1179,8 @@ ShellRoot {
                         width: tmTemp.advanceWidth + 16
                         height: 24
                         radius: 9
-                        color: (tempMouse.containsMouse || root.sysPopupOpen)
+                        color: (tempMouse.containsMouse
+                                || (root.sysPopupOpen && root.sysSection === "temp"))
                                ? root.pillHover : root.pillIdle
 
                         Behavior on color {
@@ -1134,7 +1201,39 @@ ShellRoot {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.togglePopup("sys")
+                            onClicked: root.openSysDetail("temp", tempPill)
+                        }
+                    }
+
+                    Rectangle {
+                        id: diskPill
+                        width: tmDisk.advanceWidth + 16
+                        height: 24
+                        radius: 9
+                        color: (diskMouse.containsMouse
+                                || (root.sysPopupOpen && root.sysSection === "disk"))
+                               ? root.pillHover : root.pillIdle
+
+                        Behavior on color {
+                            ColorAnimation { duration: 110 }
+                        }
+
+                        Text {
+                            id: diskLabel
+                            anchors.centerIn: parent
+                            text: root.diskPercent >= 0
+                                  ? "DISK " + root.diskPercent + "%" : "DISK --"
+                            color: root.levelColor(root.diskPercent, 80, 90)
+                            font.family: root.uiFont
+                            font.pixelSize: 12
+                        }
+
+                        MouseArea {
+                            id: diskMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.openSysDetail("disk", diskPill)
                         }
                     }
 
@@ -1143,7 +1242,8 @@ ShellRoot {
                         width: tmNet.advanceWidth + 16
                         height: 24
                         radius: 9
-                        color: (netRateMouse.containsMouse || root.sysPopupOpen)
+                        color: (netRateMouse.containsMouse
+                                || (root.sysPopupOpen && root.sysSection === "net"))
                                ? root.pillHover : root.pillIdle
 
                         Behavior on color {
@@ -1164,7 +1264,7 @@ ShellRoot {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.togglePopup("sys")
+                            onClicked: root.openSysDetail("net", netRatePill)
                         }
                     }
                 }
@@ -1373,6 +1473,10 @@ ShellRoot {
     }
 
     // ── 系统信息弹窗 ───────────────────────────────────────────────────
+    // 五个胶囊（CPU / 内存 / 温度 / 磁盘 / 网速）共用这一个 PopupWindow：
+    // 点哪个就把 sysSection 换成哪一块，并且锚到被点的那个胶囊上。
+    // 分区之间用 visible 控制即可 —— QtQuick 的 Layout 会完全跳过不可见子项
+    // （连 spacing 都不占），所以弹窗高度会跟着内容变，不会留空白。
     PopupWindow {
         id: sysPopup
 
@@ -1382,7 +1486,7 @@ ShellRoot {
         implicitWidth: 380
         implicitHeight: sysColumn.implicitHeight + 24
 
-        anchor.item: cpuPill
+        anchor.item: root.sysAnchorItem ? root.sysAnchorItem : cpuPill
         anchor.edges: Edges.Bottom | Edges.Right
         anchor.gravity: Edges.Bottom | Edges.Right
         anchor.margins.top: 8
@@ -1403,261 +1507,428 @@ ShellRoot {
                 anchors.margins: 12
                 spacing: 8
 
-                Text {
-                    Layout.fillWidth: true
-                    elide: Text.ElideRight
-                    text: {
-                        if (!root.sysReady)
-                            return "正在读取系统信息…"
-                        var hw = root.sysHardware
-                        var s = root.sysCpu && root.sysCpu.model ? root.sysCpu.model : "系统信息"
-                        if (hw && hw.hostname)
-                            s += "  ·  " + hw.hostname
-                        if (hw && hw.kernel)
-                            s += "  ·  " + hw.kernel
-                        return s
-                    }
-                    color: root.fg
-                    font.family: root.uiFont
-                    font.pixelSize: 13
-                    font.bold: true
-                }
-
-                // ── CPU ──
+                // ── 标题：当前分区 + 主机名 ──
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 8
 
                     Text {
                         Layout.fillWidth: true
-                        text: "CPU"
-                        color: root.fgDim
+                        elide: Text.ElideRight
+                        text: root.sysSectionTitle
+                        color: root.fg
                         font.family: root.uiFont
-                        font.pixelSize: 12
+                        font.pixelSize: 13
                         font.bold: true
                     }
 
                     Text {
-                        text: root.cpuUsage + "%"
-                        color: root.levelColor(root.cpuUsage, 60, 80)
+                        text: {
+                            if (!root.sysReady)
+                                return "读取中…"
+                            var hw = root.sysHardware
+                            return hw && hw.hostname ? hw.hostname : ""
+                        }
+                        color: Qt.rgba(1, 1, 1, 0.35)
                         font.family: root.uiFont
-                        font.pixelSize: 12
-                        font.bold: true
-                    }
-
-                    Text {
-                        text: root.cpuTemp > 0 ? root.cpuTemp + "℃" : "--"
-                        color: root.levelColor(root.cpuTemp, 69, 85)
-                        font.family: root.uiFont
-                        font.pixelSize: 12
+                        font.pixelSize: 11
                     }
                 }
 
-                // 每核占用柱状图（20 核）
-                RowLayout {
+                Rectangle {
                     Layout.fillWidth: true
-                    spacing: 2
+                    Layout.preferredHeight: 1
+                    color: Qt.rgba(1, 1, 1, 0.08)
+                }
+
+                // ── CPU：占用 + 每核柱状图 + 占用最高的进程 ──
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+                    visible: root.sysSection === "cpu"
+
+                    Text {
+                        Layout.fillWidth: true
+                        elide: Text.ElideRight
+                        text: root.sysCpu && root.sysCpu.model ? root.sysCpu.model : ""
+                        color: Qt.rgba(1, 1, 1, 0.40)
+                        font.family: root.uiFont
+                        font.pixelSize: 11
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: "占用"
+                            color: root.fgDim
+                            font.family: root.uiFont
+                            font.pixelSize: 12
+                            font.bold: true
+                        }
+
+                        Text {
+                            text: root.cpuUsage >= 0 ? root.cpuUsage + "%" : "--"
+                            color: root.levelColor(root.cpuUsage, 60, 80)
+                            font.family: root.uiFont
+                            font.pixelSize: 12
+                            font.bold: true
+                        }
+
+                        Text {
+                            text: root.cpuTemp > 0 ? root.cpuTemp + "℃" : "--"
+                            color: root.levelColor(root.cpuTemp, 69, 85)
+                            font.family: root.uiFont
+                            font.pixelSize: 12
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
+
+                        Repeater {
+                            model: root.cpuCores
+
+                            delegate: Rectangle {
+                                required property var modelData
+
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 20
+                                radius: 2
+                                color: Qt.rgba(1, 1, 1, 0.08)
+
+                                Rectangle {
+                                    anchors.bottom: parent.bottom
+                                    width: parent.width
+                                    height: parent.height
+                                            * Math.max(0, Math.min(1, modelData / 100))
+                                    radius: 2
+                                    color: modelData >= 80 ? root.danger
+                                           : (modelData >= 60 ? "#ffc87f" : root.accent)
+                                }
+                            }
+                        }
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: root.sysCpu
+                              ? (root.cpuCores.length + " 核 · "
+                                 + Math.round(root.sysCpu.frequency) + " MHz")
+                              : ""
+                        color: Qt.rgba(1, 1, 1, 0.40)
+                        font.family: root.uiFont
+                        font.pixelSize: 11
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 1
+                        visible: root.sysProcs.length > 0
+                        color: Qt.rgba(1, 1, 1, 0.08)
+                    }
 
                     Repeater {
-                        model: root.cpuCores
+                        model: root.sysProcs
 
-                        delegate: Rectangle {
+                        delegate: RowLayout {
+                            id: procRow
                             required property var modelData
 
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 20
-                            radius: 2
-                            color: Qt.rgba(1, 1, 1, 0.08)
+                            spacing: 8
 
-                            Rectangle {
-                                anchors.bottom: parent.bottom
-                                width: parent.width
-                                height: parent.height
-                                        * Math.max(0, Math.min(1, modelData / 100))
-                                radius: 2
-                                color: modelData >= 80 ? root.danger
-                                       : (modelData >= 60 ? "#ffc87f" : root.accent)
+                            Text {
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
+                                text: procRow.modelData.command
+                                      + "  (" + procRow.modelData.pid + ")"
+                                color: "#c6cddb"
+                                font.family: root.uiFont
+                                font.pixelSize: 12
+                            }
+
+                            Text {
+                                text: procRow.modelData.cpu.toFixed(1) + "%"
+                                color: procRow.modelData.cpu >= 30 ? "#ffc87f" : root.fgDim
+                                font.family: root.uiFont
+                                font.pixelSize: 11
+                            }
+
+                            Text {
+                                text: (procRow.modelData.memoryKB / 1024).toFixed(0) + "M"
+                                color: Qt.rgba(1, 1, 1, 0.45)
+                                font.family: root.uiFont
+                                font.pixelSize: 11
                             }
                         }
                     }
                 }
 
-                Text {
-                    Layout.fillWidth: true
-                    text: root.sysCpu
-                          ? (root.cpuCores.length + " 核 · " + Math.round(root.sysCpu.frequency) + " MHz")
-                          : ""
-                    color: Qt.rgba(1, 1, 1, 0.40)
-                    font.family: root.uiFont
-                    font.pixelSize: 11
-                }
-
                 // ── 内存 ──
-                RowLayout {
+                ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 8
+                    visible: root.sysSection === "mem"
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: "已用"
+                            color: root.fgDim
+                            font.family: root.uiFont
+                            font.pixelSize: 12
+                            font.bold: true
+                        }
+
+                        Text {
+                            text: root.memTotalKB > 0
+                                  ? root.fmtGiB(root.memUsedKB) + " / "
+                                    + root.fmtGiB(root.memTotalKB) + " GiB  ("
+                                    + root.memPercent + "%)"
+                                  : "--"
+                            color: root.levelColor(root.memPercent, 70, 90)
+                            font.family: root.uiFont
+                            font.pixelSize: 12
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 6
+                        radius: 3
+                        color: Qt.rgba(1, 1, 1, 0.12)
+
+                        Rectangle {
+                            width: parent.width
+                                   * Math.max(0, Math.min(1, root.memPercent / 100))
+                            height: parent.height
+                            radius: 3
+                            color: root.memPercent >= 90 ? root.danger
+                                   : (root.memPercent >= 70 ? "#ffc87f" : root.accent)
+
+                            Behavior on width {
+                                NumberAnimation { duration: 200 }
+                            }
+                        }
+                    }
 
                     Text {
                         Layout.fillWidth: true
-                        text: "内存"
+                        text: root.sysMemory
+                              ? "已缓存 " + root.fmtGiB(root.sysMemory.cached) + " GiB · 可用 "
+                                + root.fmtGiB(root.sysMemory.available) + " GiB"
+                                + (root.sysMemory.swaptotal > 0
+                                   ? " · swap " + root.fmtGiB(root.sysMemory.swaptotal
+                                     - root.sysMemory.swapfree) + "/"
+                                     + root.fmtGiB(root.sysMemory.swaptotal) + " GiB"
+                                   : " · 无 swap")
+                              : ""
+                        color: Qt.rgba(1, 1, 1, 0.40)
+                        font.family: root.uiFont
+                        font.pixelSize: 11
+                    }
+                }
+
+                // ── 温度 ──
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+                    visible: root.sysSection === "temp"
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+
+                        Text {
+                            text: root.cpuTemp > 0 ? root.cpuTemp + "℃" : "--℃"
+                            color: root.levelColor(root.cpuTemp, 69, 85)
+                            font.family: root.uiFont
+                            font.pixelSize: 30
+                            font.bold: true
+                        }
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: root.tempLevelText
+                            color: root.fgDim
+                            font.family: root.uiFont
+                            font.pixelSize: 12
+                            wrapMode: Text.WordWrap
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 6
+                        radius: 3
+                        color: Qt.rgba(1, 1, 1, 0.12)
+
+                        Rectangle {
+                            // 0–100℃ 映射成条宽，超过 85℃ 变红
+                            width: parent.width
+                                   * Math.max(0, Math.min(1, root.cpuTemp / 100))
+                            height: parent.height
+                            radius: 3
+                            color: root.levelColor(root.cpuTemp, 69, 85)
+                        }
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: root.sysCpu
+                              ? "CPU 封装温度 · " + Math.round(root.sysCpu.frequency)
+                                + " MHz · " + root.cpuCores.length + " 核"
+                              : ""
+                        color: Qt.rgba(1, 1, 1, 0.40)
+                        font.family: root.uiFont
+                        font.pixelSize: 11
+                    }
+                }
+
+                // ── 磁盘：IO + 各挂载点占用 ──
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+                    visible: root.sysSection === "disk"
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: {
+                            var d = root.sysDisks.length > 0 ? root.sysDisks[0] : null
+                            return d
+                                   ? d.device + "  读 " + root.fmtRate(d.readrate)
+                                     + "/s  写 " + root.fmtRate(d.writerate) + "/s"
+                                   : "磁盘 I/O --"
+                        }
                         color: root.fgDim
                         font.family: root.uiFont
                         font.pixelSize: 12
-                        font.bold: true
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 1
+                        color: Qt.rgba(1, 1, 1, 0.08)
+                    }
+
+                    Repeater {
+                        model: root.sysMounts
+
+                        delegate: ColumnLayout {
+                            id: mountRow
+                            required property var modelData
+
+                            Layout.fillWidth: true
+                            spacing: 4
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
+                                    text: mountRow.modelData.mount
+                                          + "  (" + mountRow.modelData.fstype + ")"
+                                    color: "#c6cddb"
+                                    font.family: root.uiFont
+                                    font.pixelSize: 12
+                                }
+
+                                Text {
+                                    text: mountRow.modelData.used + " / "
+                                          + mountRow.modelData.size
+                                    color: Qt.rgba(1, 1, 1, 0.55)
+                                    font.family: root.uiFont
+                                    font.pixelSize: 11
+                                }
+
+                                Text {
+                                    text: mountRow.modelData.percent
+                                    color: root.levelColor(
+                                               parseInt(mountRow.modelData.percent), 80, 90)
+                                    font.family: root.uiFont
+                                    font.pixelSize: 11
+                                    font.bold: true
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 5
+                                radius: 3
+                                color: Qt.rgba(1, 1, 1, 0.12)
+
+                                Rectangle {
+                                    width: parent.width
+                                           * Math.max(0, Math.min(1,
+                                               parseInt(mountRow.modelData.percent) / 100))
+                                    height: parent.height
+                                    radius: 3
+                                    color: root.levelColor(
+                                               parseInt(mountRow.modelData.percent), 80, 90)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ── 网络：各网卡实时速率 ──
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+                    visible: root.sysSection === "net"
+
+                    Repeater {
+                        model: root.netIfaces
+
+                        delegate: RowLayout {
+                            id: ifRow
+                            required property var modelData
+
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            Text {
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
+                                text: ifRow.modelData.interface
+                                color: "#c6cddb"
+                                font.family: root.uiFont
+                                font.pixelSize: 12
+                            }
+
+                            Text {
+                                text: "↓" + root.fmtRate(ifRow.modelData.rxrate) + "/s"
+                                color: root.accent
+                                font.family: root.uiFont
+                                font.pixelSize: 11
+                            }
+
+                            Text {
+                                text: "↑" + root.fmtRate(ifRow.modelData.txrate) + "/s"
+                                color: root.fgDim
+                                font.family: root.uiFont
+                                font.pixelSize: 11
+                            }
+                        }
                     }
 
                     Text {
-                        text: root.memTotalKB > 0
-                              ? root.fmtGiB(root.memUsedKB) + " / " + root.fmtGiB(root.memTotalKB)
-                                + " GiB  (" + root.memPercent + "%)"
-                              : "--"
-                        color: root.levelColor(root.memPercent, 70, 90)
+                        Layout.fillWidth: true
+                        text: root.wifiConnected
+                              ? "Wi-Fi " + root.wifiSsid + " · " + root.wifiRssi + " dBm"
+                              : "未连接 Wi-Fi"
+                        color: Qt.rgba(1, 1, 1, 0.40)
                         font.family: root.uiFont
-                        font.pixelSize: 12
-                    }
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 6
-                    radius: 3
-                    color: Qt.rgba(1, 1, 1, 0.12)
-
-                    Rectangle {
-                        width: parent.width * Math.max(0, Math.min(1, root.memPercent / 100))
-                        height: parent.height
-                        radius: 3
-                        color: root.memPercent >= 90 ? root.danger
-                               : (root.memPercent >= 70 ? "#ffc87f" : root.accent)
-
-                        Behavior on width {
-                            NumberAnimation { duration: 200 }
-                        }
-                    }
-                }
-
-                Text {
-                    Layout.fillWidth: true
-                    visible: root.sysMemory !== null
-                    text: root.sysMemory
-                          ? "已缓存 " + root.fmtGiB(root.sysMemory.cached) + " GiB · 可用 "
-                            + root.fmtGiB(root.sysMemory.available) + " GiB"
-                            + (root.sysMemory.swaptotal > 0
-                               ? " · swap " + root.fmtGiB(root.sysMemory.swaptotal
-                                 - root.sysMemory.swapfree) + "/"
-                                 + root.fmtGiB(root.sysMemory.swaptotal) + " GiB"
-                               : " · 无 swap")
-                          : ""
-                    color: Qt.rgba(1, 1, 1, 0.40)
-                    font.family: root.uiFont
-                    font.pixelSize: 11
-                }
-
-                // ── 网络 / 磁盘 IO ──
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 1
-                    color: Qt.rgba(1, 1, 1, 0.08)
-                }
-
-                Text {
-                    Layout.fillWidth: true
-                    text: {
-                        var s = root.netStat
-                              ? "网络 " + root.netStat.interface + "  ↓" + root.fmtRate(root.netRx)
-                                + "/s  ↑" + root.fmtRate(root.netTx) + "/s"
-                              : "网络 --"
-                        return s
-                    }
-                    color: root.fgDim
-                    font.family: root.uiFont
-                    font.pixelSize: 12
-                }
-
-                Text {
-                    Layout.fillWidth: true
-                    visible: root.sysDisks.length > 0
-                    text: {
-                        var d = root.sysDisks.length > 0 ? root.sysDisks[0] : null
-                        return d ? "磁盘 " + d.device + "  读 " + root.fmtRate(d.readrate)
-                                   + "/s  写 " + root.fmtRate(d.writerate) + "/s" : ""
-                    }
-                    color: root.fgDim
-                    font.family: root.uiFont
-                    font.pixelSize: 12
-                }
-
-                // ── 磁盘挂载占用 ──
-                Repeater {
-                    model: root.sysMounts
-
-                    delegate: RowLayout {
-                        id: mountRow
-                        required property var modelData
-
-                        Layout.fillWidth: true
-                        spacing: 8
-
-                        Text {
-                            Layout.fillWidth: true
-                            elide: Text.ElideRight
-                            text: mountRow.modelData.mount + "  (" + mountRow.modelData.fstype + ")"
-                            color: "#c6cddb"
-                            font.family: root.uiFont
-                            font.pixelSize: 12
-                        }
-
-                        Text {
-                            text: mountRow.modelData.used + " / " + mountRow.modelData.size
-                                  + "  " + mountRow.modelData.percent
-                            color: Qt.rgba(1, 1, 1, 0.55)
-                            font.family: root.uiFont
-                            font.pixelSize: 11
-                        }
-                    }
-                }
-
-                // ── 进程 top（按 CPU 排序）──
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 1
-                    visible: root.sysProcs.length > 0
-                    color: Qt.rgba(1, 1, 1, 0.08)
-                }
-
-                Repeater {
-                    model: root.sysProcs
-
-                    delegate: RowLayout {
-                        id: procRow
-                        required property var modelData
-
-                        Layout.fillWidth: true
-                        spacing: 8
-
-                        Text {
-                            Layout.fillWidth: true
-                            elide: Text.ElideRight
-                            text: procRow.modelData.command
-                                  + "  (" + procRow.modelData.pid + ")"
-                            color: "#c6cddb"
-                            font.family: root.uiFont
-                            font.pixelSize: 12
-                        }
-
-                        Text {
-                            text: procRow.modelData.cpu.toFixed(1) + "%"
-                            color: procRow.modelData.cpu >= 30 ? "#ffc87f" : root.fgDim
-                            font.family: root.uiFont
-                            font.pixelSize: 11
-                        }
-
-                        Text {
-                            text: (procRow.modelData.memoryKB / 1024).toFixed(0) + "M"
-                            color: Qt.rgba(1, 1, 1, 0.45)
-                            font.family: root.uiFont
-                            font.pixelSize: 11
-                        }
+                        font.pixelSize: 11
                     }
                 }
             }
