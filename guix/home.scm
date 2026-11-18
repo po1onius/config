@@ -22,6 +22,9 @@
               #:select (home-fcitx5-service-type
                         home-fcitx5-configuration))
              ;; 本频道：quickshell（自写状态栏，取代 waybar）home 服务
+             ((ch0r0ng services swayidle)
+              #:select (home-swayidle-service-type
+                        swayidle-configuration))
              ((ch0r0ng services quickshell)
               #:select (home-quickshell-service-type
                         quickshell-configuration)))
@@ -79,7 +82,7 @@
      ;; 由 home-fcitx5-service-type 自动加进 profile；中文引擎与主题通过它的
      ;; input-method-editors / themes 字段给出（见下面 services）。
      
-     "starship" "alacritty" "font-lxgw-wenkai" "font-apple-sf-mono" "font-awesome" "font-nerd-symbols" "font-google-noto-emoji" "rofi" "firefox" "podman-compose"
+     "starship" "alacritty" "font-lxgw-wenkai" "font-apple-sf-mono" "font-awesome" "font-nerd-symbols" "font-google-noto-emoji" "rofi" "firefox" "podman-compose" "swaylock"
  )))
  (services
   (list 
